@@ -1,6 +1,6 @@
 # BACKEND_PROOF.md
 
-Status: **IN PROGRESS — P2–P4 ✅, lifecycle steps 1–7 proven, steps 8–9 pending (Aug 12)**
+Status: **🟡 IN PROGRESS — steps 8–9 pending 2026-08-12T15:03:15Z UTC**
 
 ---
 
@@ -34,7 +34,7 @@ Status: **IN PROGRESS — P2–P4 ✅, lifecycle steps 1–7 proven, steps 8–9
 Unit:       62 / 62  ✅
 Fuzz:        7 / 7   ✅  (1000 runs each)
 Invariant:   4 / 4   ✅  (256 runs × 50 depth = 12,800 calls/invariant)
-Integration: 0       (planned post-testnet)
+Integration: 0       (testnet manual lifecycle serves as integration proof)
 Total:      73 / 73  ✅
 ```
 
@@ -100,12 +100,82 @@ Wallet B (deployer / takeover): `0x69ff8eC5B523E334c328c0Dc60391E7643494D6c`
 
 ### Scenario 8 — Foreclosure ⏳
 
-- Eligible after: 2026-08-12T15:03:15Z UTC
+- Eligible after: **2026-08-12T15:03:15Z UTC**
+- Caller: any wallet (foreclosure is permissionless)
 - tx: _pending_
+- Block: _pending_
 
 ### Scenario 9 — Same Seat Taken Again Post-Foreclosure ⏳
 
+- Verify: Seat #1 status = VACANT, owner = address(0)
+- Verify: Seat #1 history preserved in indexer (events from scenarios 1–8 intact)
+- Caller: Wallet A (completing the full A→B→foreclose→A cycle)
 - tx: _pending_
+- Block: _pending_
+
+---
+
+## Aug 12 Runbook
+
+Run these from your local machine after **2026-08-12T15:03:15Z UTC**.
+
+Set environment variables first:
+```bash
+export RPC=https://rpc.testnet.chain.robinhood.com
+export BOARD=0x0a3932a24dCC9Bbd7BFC448Da99265EC58F806DB
+export USDG=0x7E955252E15c84f5768B83c41a71F9eba181802F
+export WALLET_A=<wallet-a-private-key>
+export WALLET_B=<wallet-b-private-key>
+```
+
+**Step 8 — Foreclose Seat #1** (permissionless, use either wallet)
+```bash
+cast send $BOARD \
+  "forecloseSeat(uint256)" 1 \
+  --rpc-url $RPC \
+  --private-key $WALLET_B
+```
+
+Verify before step 9:
+```bash
+# Should return owner = 0x0000...0000 (vacant)
+cast call $BOARD "ownerOf(uint256)(address)" 1 --rpc-url $RPC
+```
+
+**Step 9 — Re-take Seat #1 with Wallet A**
+
+First approve USDG spend (vacant price $10 + prepaid $0.50 = $10.50 = 10,500,000 units):
+```bash
+cast send $USDG \
+  "approve(address,uint256)" \
+  $BOARD 10500000 \
+  --rpc-url $RPC \
+  --private-key $WALLET_A
+```
+
+Then take the seat (price=$10=10,000,000 units, prepaid=$0.50=500,000 units):
+```bash
+cast send $BOARD \
+  "takeVacantSeat(uint256,uint256,uint256)" \
+  1 10000000 500000 \
+  --rpc-url $RPC \
+  --private-key $WALLET_A
+```
+
+Verify:
+```bash
+# Should return Wallet A address
+cast call $BOARD "ownerOf(uint256)(address)" 1 --rpc-url $RPC
+
+# Should show full history (scenarios 1–9) in indexer
+curl https://board-fun.vercel.app/api/boards/hood/seats/1 | jq '.events | length'
+```
+
+After confirming both txs:
+1. Paste tx hashes into Scenarios 8 and 9 above
+2. Change status line at top to: **✅ COMPLETE**
+3. Update `STATUS.md` to mark P5 complete
+4. Commit and push
 
 ---
 
@@ -117,7 +187,7 @@ Wallet B (deployer / takeover): `0x69ff8eC5B523E334c328c0Dc60391E7643494D6c`
 | Seller (Wallet A) | Received $2.999913 remaining balance refund |
 | Treasury | Received $1 protocol fee (5% of $20) |
 | Board contract | Holds $1.50 new prepaid balance |
-| Total accounted | $20 price = $19 to seller refund pathway + $1 fee ✅ |
+| Total accounted | $20 price = $19 seller pathway + $1 fee ✅ |
 
 ---
 
@@ -153,5 +223,5 @@ API state verified to match contract state at every lifecycle step.
 
 ## Known Issues
 
-- Foreclosure and final retake (scenarios 8–9) require waiting until 2026-08-12T15:03:15Z for grace to expire. All prior scenarios proven.
-- Price was artificially set to $1,000,000 to accelerate grace depletion for proof purposes. Normal economics use $10–$100 range.
+- Scenarios 8–9 require waiting until 2026-08-12T15:03:15Z for grace to expire.
+- Price was set to $1,000,000 in scenario 5 to accelerate depletion. Normal economics use $10–$100.
