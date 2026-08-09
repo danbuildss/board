@@ -59,8 +59,9 @@ contract BoardTest is Test {
         return (price * HOLDING_RATE_NUM) / HOLDING_RATE_DEN;
     }
 
+    // Matches contract's _minDeposit: single division to avoid rounding mismatch
     function minDeposit(uint256 price) internal pure returns (uint256) {
-        return weeklyFee(price) * MIN_COVERAGE_WEEKS;
+        return (price * HOLDING_RATE_NUM * MIN_COVERAGE_WEEKS) / HOLDING_RATE_DEN;
     }
 
     function fee(uint256 price, uint256 elapsed) internal pure returns (uint256) {
@@ -102,7 +103,7 @@ contract SeatAcquisitionTest is BoardTest {
         assertEq(usdc.balanceOf(alice),          aliceBefore - VACANT_PRICE - deposit);
         assertEq(usdc.balanceOf(treasury),        treasuryBefore + VACANT_PRICE);
         assertEq(usdc.balanceOf(address(board)),  boardBefore + deposit);
-        assertEq(board.seatStatus(7), Board.SeatStatus.ACTIVE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.ACTIVE));
     }
 
     function test_TakeVacantSeat_SeatDataStored() public {
@@ -273,7 +274,7 @@ contract HoldingFeeTest is BoardTest {
 
     function test_Holding_NoElapsedTime() public {
         // No time passed — status should be ACTIVE
-        assertEq(board.seatStatus(7), Board.SeatStatus.ACTIVE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.ACTIVE));
         (,,,uint256 effective,,,,) = board.seatCoverage(7);
         assertEq(effective, minDeposit(seatPrice)); // full deposit remains
     }
@@ -305,7 +306,7 @@ contract HoldingFeeTest is BoardTest {
         skip(HOLDING_PERIOD * 2);
         (,,,uint256 effective,,,,) = board.seatCoverage(7);
         assertEq(effective, 0);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
     }
 
     function test_Holding_DepletionTimestampCorrect() public {
@@ -399,13 +400,13 @@ contract TopUpTest is BoardTest {
     function test_TopUp_RestoresActiveFromGrace() public {
         // Deplete the seat
         skip(HOLDING_PERIOD * 2 + 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
 
         // Top up enough for 2 more weeks
         vm.prank(alice);
         board.topUpSeat(7, weeklyFee(seatPrice) * 3);
 
-        assertEq(board.seatStatus(7), Board.SeatStatus.ACTIVE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.ACTIVE));
     }
 
     function test_TopUp_MultipleTopUps() public {
@@ -555,7 +556,7 @@ contract TakeoverTest is BoardTest {
     function test_Takeover_DuringGrace_Succeeds() public {
         // Deplete seat
         skip(HOLDING_PERIOD * 2 + 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
 
         // Bob can still take it
         vm.prank(bob);
@@ -659,31 +660,31 @@ contract GraceForeclosureTest is BoardTest {
 
     function test_Grace_ActiveBeforeDepletion() public {
         skip(HOLDING_PERIOD * 2 - 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.ACTIVE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.ACTIVE));
     }
 
     function test_Grace_EntersGraceAtDepletion() public {
         // Advance past 2-week deposit window
         uint256 depletion = depletionTime(seatPrice, deposit, acquireTime);
         vm.warp(depletion + 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
     }
 
     function test_Grace_ExactDepleteIsGrace() public {
         uint256 depletion = depletionTime(seatPrice, deposit, acquireTime);
         vm.warp(depletion);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
     }
 
     function test_Grace_TopUpRestoresActive() public {
         uint256 depletion = depletionTime(seatPrice, deposit, acquireTime);
         vm.warp(depletion + 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE));
 
         vm.prank(alice);
         board.topUpSeat(7, weeklyFee(seatPrice) * 3);
 
-        assertEq(board.seatStatus(7), Board.SeatStatus.ACTIVE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.ACTIVE));
     }
 
     function test_Grace_72HourWindow() public {
@@ -691,10 +692,10 @@ contract GraceForeclosureTest is BoardTest {
         uint256 graceEnd  = depletion + GRACE_PERIOD;
 
         vm.warp(graceEnd);
-        assertEq(board.seatStatus(7), Board.SeatStatus.GRACE); // exactly at end = still grace
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.GRACE)); // exactly at end = still grace
 
         vm.warp(graceEnd + 1);
-        assertEq(board.seatStatus(7), Board.SeatStatus.FORECLOSABLE);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.FORECLOSABLE));
     }
 
     function test_Foreclosure_OneSecondEarlyReverts() public {
@@ -714,14 +715,14 @@ contract GraceForeclosureTest is BoardTest {
         vm.prank(carol);
         board.forecloseSeat(7);
 
-        assertEq(board.seatStatus(7), Board.SeatStatus.VACANT);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.VACANT));
     }
 
     function test_Foreclosure_AnyoneCanForeclose() public {
         vm.warp(depletionTime(seatPrice, deposit, acquireTime) + GRACE_PERIOD + 1);
         vm.prank(dave);
         board.forecloseSeat(7);
-        assertEq(board.seatStatus(7), Board.SeatStatus.VACANT);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.VACANT));
     }
 
     function test_Foreclosure_PreservesIdentity() public {
@@ -730,7 +731,7 @@ contract GraceForeclosureTest is BoardTest {
         board.forecloseSeat(7);
 
         // Seat #7 still exists as a concept; it's VACANT, not destroyed
-        assertEq(board.seatStatus(7), Board.SeatStatus.VACANT);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.VACANT));
     }
 
     function test_Foreclosure_PreviousOwnerCleared() public {
@@ -899,7 +900,7 @@ contract FuzzBoardTest is BoardTest {
 
         vm.prank(carol);
         board.forecloseSeat(7);
-        assertEq(board.seatStatus(7), Board.SeatStatus.VACANT);
+        assertEq(uint256(board.seatStatus(7)), uint256(Board.SeatStatus.VACANT));
     }
 }
 

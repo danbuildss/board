@@ -340,7 +340,6 @@ contract Board is ERC721, ReentrancyGuard, Ownable {
         if (prepaidAmount < minRequired) revert InsufficientDeposit(minRequired, prepaidAmount);
 
         // Collect vacant Seat price and prepaid balance
-        uint256 total = vacantSeatPrice + prepaidAmount;
         settlementAsset.safeTransferFrom(msg.sender, treasury, vacantSeatPrice);
         settlementAsset.safeTransferFrom(msg.sender, address(this), prepaidAmount);
 
