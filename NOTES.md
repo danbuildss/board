@@ -32,12 +32,19 @@ Repo is empty. PRODUCT.md written and committed. Next step: spec the architectur
 | 8 | No $BOARD, no yield, no staking in V1 | Behavior before revenue |
 | 9 | ERC-721 internally, never exposed to user | Seat identity and composability without NFT framing |
 | 10 | Share cards on every takeover | Distribution mechanic baked into the core loop |
+| 11 | Chain: Robinhood Chain | Natural fit for HOOD as first Board |
+| 12 | Single `Board.sol` contract preferred | Simpler, fewer attack surfaces than separate token contract |
+| 13 | Disable/guard standard ERC-721 transfers | Prevent bypass of takeover fee, holding settlement, price mechanic |
+| 14 | Lazy settlement (no cron) | Fees accrue mathematically, settle on interaction |
+| 15 | Deterministic grace (no keeper) | Grace timestamp derived from price + rate + balance + lastSettledAt |
 
 ---
 
 ### What's Been Built
 
-_Nothing yet._
+- `PRODUCT.md` — full product spec
+- `BUILD_SPEC.md` — engineering spec (build order, contracts, tests, indexer, API, DB schema)
+- `NOTES.md` — this file
 
 ---
 
@@ -72,17 +79,22 @@ $BOARD · yield · staking · HOOD trading · Morpho · Uniswap · AI agents · 
 
 ### Tech Stack
 
-_Not decided yet. Next session should spec this out._
+| Layer | Choice |
+|---|---|
+| Chain | Robinhood Chain |
+| Contracts | Solidity + Foundry + OpenZeppelin |
+| Frontend | Next.js + TypeScript + viem + wagmi |
+| Database | Postgres (Supabase acceptable) |
+| Settlement asset | Configurable ERC-20 stable token (USDC assumed, not locked yet) |
 
 ---
 
 ### Open Questions
 
-- Chain? (Robinhood Chain, Base, or other)
-- Stable token for settlement? (USDC assumed)
-- Frontend framework?
-- Real-time infrastructure for activity feed and notifications?
-- Boardroom implementation (chat layer)?
+- Exact stable token address on Robinhood Chain?
+- Real-time infrastructure for activity feed (WebSockets / SSE / polling)?
+- Boardroom chat layer?
+- Notification delivery channel (email / push / in-app)?
 
 ---
 
