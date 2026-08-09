@@ -16,3 +16,9 @@ seed = "0x1"
 [invariant]
 runs  = 256
 depth = 50
+
+[rpc_endpoints]
+robinhood_testnet = "${ROBINHOOD_TESTNET_RPC:-https://rpc.testnet.chain.robinhood.com}"
+
+[etherscan]
+robinhood_testnet = { key = "${BLOCKSCOUT_API_KEY:-verifyContract}", url = "https://explorer.testnet.chain.robinhood.com/api" }

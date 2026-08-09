@@ -6,7 +6,7 @@
 
 P0 Contracts — ✅ COMPLETE
 P1 Contract Tests — ✅ COMPLETE (73/73 pass)
-P2 Testnet Deployment — not started
+P2 Testnet Deployment — scripts ready, awaiting local deploy (RPC blocked in remote env)
 P3 Indexer — not started
 P4 Backend API — not started
 P5 End-to-End Lifecycle Proof — not started
@@ -35,8 +35,8 @@ P2 — Testnet deployment to Robinhood Chain
 
 ## Blockers
 
-- Settlement asset (stable) address on Robinhood Chain testnet — need to confirm or deploy mock
-- Robinhood Chain testnet RPC URL — need from operator
+- Remote execution environment egress policy blocks rpc.testnet.chain.robinhood.com:443
+  → P2 deploy must be run locally (all scripts ready)
 
 ---
 
@@ -54,8 +54,8 @@ Total:      73 / 73  ✅
 
 ## Next
 
-1. Get Robinhood Chain testnet RPC + settlement asset address from operator
-2. Deploy Board.sol to testnet via `DeployBoard.s.sol`
-3. Record addresses in `BACKEND_PROOF.md`
+1. Run deployment from local machine (see deploy guide below)
+2. Record Board address + deploy block in `BACKEND_PROOF.md`
+3. Fund 2 test wallets with testnet USDG from https://faucet.paxos.com/?network=robinhood
 4. Run 8-scenario manual lifecycle (take → reprice → takeover → grace → recovery → foreclose → retake)
 5. Start P3 indexer (`services/indexer/`)
