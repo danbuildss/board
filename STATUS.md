@@ -6,8 +6,8 @@
 
 P0 Contracts — ✅ COMPLETE
 P1 Contract Tests — ✅ COMPLETE (73/73 pass)
-P2 Testnet Deployment — scripts ready, awaiting local deploy (RPC blocked in remote env)
-P3 Indexer — not started
+P2 Testnet Deployment — ✅ COMPLETE (Board: 0x0a3932a24dCC9Bbd7BFC448Da99265EC58F806DB, block 98751649)
+P3 Indexer — in progress
 P4 Backend API — not started
 P5 End-to-End Lifecycle Proof — not started
 

@@ -1,6 +1,6 @@
 # BACKEND_PROOF.md
 
-Status: **INCOMPLETE — P2 deployment in progress**
+Status: **INCOMPLETE — P2 ✅ deployed, lifecycle proof pending**
 
 ---
 
@@ -14,7 +14,9 @@ Status: **INCOMPLETE — P2 deployment in progress**
 | Explorer | https://explorer.testnet.chain.robinhood.com |
 | Settlement asset | USDG (Paxos Global Dollar) |
 | Settlement asset address | 0x7E955252E15c84f5768B83c41a71F9eba181802F |
-| Deployment block | _TBD_ |
+| Deployment block | 98751649 |
+| Deploy tx | 0xa313abe4eba795d9ad284da9a3fbc8c92fa685fc92e6bc4febdb7fe233bb11ac |
+| Deployer | 0x69ff8eC5B523E334c328c0Dc60391E7643494D6c |
 
 ---
 
@@ -22,7 +24,7 @@ Status: **INCOMPLETE — P2 deployment in progress**
 
 | Contract | Address | Block |
 |---|---|---|
-| Board | _TBD_ | _TBD_ |
+| Board | 0x0a3932a24dCC9Bbd7BFC448Da99265EC58F806DB | 98751649 |
 
 ---
 
