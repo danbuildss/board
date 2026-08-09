@@ -72,3 +72,15 @@ Reason: Robinhood Chain stable token address not yet confirmed. Avoids redeploym
 Alternatives: Hardcode USDC address.
 
 Impact: Deployment scripts require settlement asset address as input. Tests use a mock ERC-20.
+
+---
+
+## 2026-08-09 — Master Product Brief: PRODUCT.md updated
+
+Decision: Expanded PRODUCT.md to match the Master Product Brief. No economics changed.
+
+Reason: The brief adds missing sections that were not in the original PRODUCT.md: ERC-6551 direction ("architect for it, don't ship"), revenue philosophy (no V1 redistribution), $BOARD token reasoning, V1.5 Robinhood Market Layer, seat art philosophy ("history is rarity"), boardroom three-panel structure, design direction locked (financial terminal × competitive game), typography locked (Geist Sans + Geist Mono), activity feed format locked (HH:MM:SS tape format), seat number format fixed to three digits (#007), boardroom access clarified (ACTIVE or GRACE eligible).
+
+Alternatives: Leave PRODUCT.md as-is, rely on brief as separate document.
+
+Impact: PRODUCT.md is now the canonical source for all product decisions. CLAUDE.md updated with seat number format rule, boardroom access rule, design direction, and activity feed format. No contract changes. No economic changes.

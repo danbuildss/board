@@ -1,15 +1,23 @@
 import { Pool } from 'pg';
 
 // Singleton pool — survives across hot reloads in dev
-const globalPool = globalThis as typeof globalThis & { _boardPool?: Pool };
+const g = globalThis as typeof globalThis & { _boardPool?: Pool };
 
-if (!globalPool._boardPool) {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-  globalPool._boardPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    max: 5,
-    idleTimeoutMillis: 30_000,
-  });
+export function getPool(): Pool {
+  if (!g._boardPool) {
+    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+    g._boardPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 5,
+      idleTimeoutMillis: 30_000,
+    });
+  }
+  return g._boardPool;
 }
 
-export const pool = globalPool._boardPool;
+// Lazy proxy so importing this module at build time doesn't throw
+export const pool = new Proxy({} as Pool, {
+  get(_target, prop: string) {
+    return (getPool() as unknown as Record<string, unknown>)[prop];
+  },
+});

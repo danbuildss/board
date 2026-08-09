@@ -1,219 +1,190 @@
 # PRODUCT.md
 ## BOARD
 
-### Product Summary
+### Consumer Tagline
 
-BOARD is a social ownership game for programmable markets.
-Each supported market has a limited Board containing scarce Seats.
+**Own your seat. Name your price. Anyone can take it.**
 
-For the first experiment:
-**HOOD Board — 100 Seats**
+### Long-Term Vision
+
+BOARD turns programmable markets into living communities of scarce, contestable, programmable Seats.
+
+---
+
+### What BOARD Is
+
+BOARD creates a social ownership layer around real programmable markets. Each supported market can have a Board.
+
+Examples:
+- HOOD Board
+- NVDA Board
+- GME Board
+- AAPL Board
+- META Board
+
+Each Board has a fixed number of scarce Seats.
+
+**For the first experiment: HOOD Board — 100 Seats.**
 
 A user can:
-1. Take an available Seat.
-2. Set their own price for that Seat.
-3. Pay an ongoing holding cost based on that price.
-4. Be automatically bought out by anyone willing to pay the listed price.
-5. Take Seats from other users.
-6. Build ownership history and reputation.
-7. Access a Seat-holder-only Boardroom.
+1. Take an available Seat
+2. Choose the price of their Seat
+3. Maintain it by paying a holding cost
+4. Be taken over by anyone willing to pay their listed price
+5. Take Seats from other users
+6. Build permanent Seat history
+7. Build profile reputation
+8. Access the market's private Boardroom
+9. Participate in the social game around that market
 
-**The central mechanic:**
-Price your Seat too high and it becomes expensive to maintain.
-Price it too low and somebody can take it.
-Every Seat is always for sale.
+---
+
+### Three-Layer Mental Model
+
+```
+REAL MARKET
+
+HOOD
+NVDA
+GME
+AAPL
+
+     ↓
+
+BOARD
+
+100 scarce positions
+
+     ↓
+
+SEATS
+
+#001
+#002
+#003
+...
+#100
+```
+
+Later (not V1):
+
+```
+SEAT
+ ↓
+PROGRAMMABLE ACCOUNT
+ ↓
+Assets · Rights · History · Credentials · Market state
+```
+
+That programmable-account layer is NOT part of V1.
 
 ---
 
 ### Important Product Language
 
-Users interact with **Seats**.
+Users own **SEATS**.
 
-They do NOT interact with:
-- NFTs
-- token IDs
-- NFT collections
-- NFT marketplaces
-- minting terminology
-- ERC-721 terminology
+Do not describe BOARD as an NFT project. Do not expose NFT terminology in the consumer UI.
 
-These are implementation details.
+**Use:**
+```
+Seat · Take Seat · Own Seat · Seat Owner · Seat Price · Your Seats
+Takeover · Board · Boardroom · Seat History · Holding Balance
+Lost Your Seat · Back on the Board
+```
 
-**User-facing language:**
-- Take a Seat
-- Own a Seat
-- Your Seats
-- Seat #07
-- Set your price
-- Take this Seat
-- Lost your Seat
-- Seat history
-- Board history
+**Do NOT use:**
+```
+NFT · Mint NFT · NFT Holder · Collection · Token ID · Floor Price
+Rarity · NFT Marketplace · JPEG
+```
 
-Technical documentation may explain that Seats use ERC-721-compatible ownership internally. The consumer product should not describe BOARD as an NFT project.
+ERC-721 is an internal implementation detail only. The user should never need to know or care.
 
 ---
 
-### Vision
+### Core Mechanic
 
-Traditional markets create communities. Programmable markets can create something new: scarce, contestable social ownership around those communities.
-
-BOARD introduces:
+BOARD uses contestable/self-assessed ownership. Every owned Seat has a price chosen by its owner.
 
 ```
-MARKET
-  ↓
-BOARD
-  ↓
-SEATS
-  ↓
-OWNERS
+HOOD / SEAT #007
+
+Owner:  Dan
+Price:  $80
 ```
 
-The long-term vision: Every important programmable market can have a living social ownership layer. Stocks are the first context. Later, Boards could exist around other markets, protocols, assets, communities and financial ecosystems.
+That means: Anyone can pay $80 and immediately take Seat #007. The owner cannot reject the purchase.
 
 ---
 
-### Product Thesis
+### Game Theory
 
-Tokenized financial assets should enable new behaviors rather than simply recreating brokerage interfaces onchain.
-
-BOARD introduces:
-
-**Contestable Ownership**
-- A Seat is scarce.
-- A Seat has history.
-- A Seat has an owner.
-- The owner chooses its price.
-- Anyone can pay that price and take the Seat.
-- Ownership is never permanent.
-
----
-
-### V1 Experiment
-
-Launch only: **HOOD Board — 100 Seats**
-
-Do NOT launch other Boards initially.
-
-The purpose is to answer: Will people care enough about owning a Seat to defend it, price it, lose it, take another one and return?
-
----
-
-### Exact V1 Economics
-
-**Initial Seat Price: $10**
-
-All 100 Seats begin with the same initial acquisition price. A user taking a vacant Seat pays:
-```
-$10 initial Seat price
-+
-required prepaid holding balance
-```
-
-The settlement asset should be a supported stable-denominated token. Do not expose token decimals or blockchain complexity in normal UI.
-
----
-
-### Seat Price
-
-Every owner must assign a self-assessed price to their Seat.
-
-```
-HOOD
-SEAT #07
-
-Your price:
-$80
-```
-
-That means: Anyone can take Seat #07 by paying $80. The owner cannot reject the purchase.
-
----
-
-### Takeover Economics
-
-Whenever somebody takes an occupied Seat:
-- **95%** → previous owner
-- **5%** → BOARD
-
-```
-Seat price:     $100
-
-Seller:          $95
-BOARD fee:        $5
-```
-
-Any remaining prepaid holding balance belonging to the previous owner is refunded separately after accrued holding costs are settled.
-
----
-
-### Holding Cost
-
-**Holding rate: 0.5% per week**
-
-The holding cost is based on the Seat's self-assessed price.
-
-```
-Seat price:      $100
-Weekly cost:     $0.50
-```
-
-The cost should accrue continuously.
-
-**This creates the core tension:**
+The owner chooses their own Seat price. This creates the central tension:
 
 | Price High | Price Low |
 |---|---|
-| Harder for another user to take | Cheaper to hold |
-| More expensive to hold | Easier for another user to take |
+| Seat is harder to take | Seat is cheaper to maintain |
+| Holding cost is higher | Someone can take it easily |
 
-There is no perfect price.
+There is no objectively correct Seat price. Users continuously decide: **What is this Seat worth to me?** That is the core game.
+
+---
+
+### V1 Economics
+
+These parameters are locked unless the founder explicitly changes them.
+
+```
+Board:                  HOOD
+Seat count:             100
+Vacant Seat price:      $10
+Holding rate:           0.5% per week
+Grace:                  72 hours
+Seller share:           95%
+Protocol takeover fee:  5%
+Min new-owner coverage: 2 weeks
+```
+
+The settlement asset is USDG (a supported stable-denominated token). Do not expose token decimals or blockchain complexity in normal UI.
 
 ---
 
 ### Prepaid Holding Balance
 
-Owners deposit funds used to cover holding costs.
+Each owner maintains a holding balance.
 
 ```
 Seat price:            $100
-Holding rate:          $0.50/week
-Prepaid balance:       $10
+Weekly cost:           $0.50
+Holding balance:       $10
 Estimated coverage:    20 weeks
 ```
 
 **The product must always clearly display:**
 - Seat price
 - Weekly holding cost
-- Prepaid balance
-- Estimated remaining coverage
+- Holding balance
+- Coverage remaining
 - Estimated depletion date
-- Grace-period status
-
----
-
-### Minimum Initial Coverage
-
-When taking a vacant or occupied Seat, the new owner must fund at least **2 weeks of holding coverage** based on the new price they choose. This prevents users from acquiring Seats that instantly enter grace.
 
 ---
 
 ### Grace Period
 
-When a Seat's prepaid balance becomes exhausted:
+When holding balance reaches zero:
 
 ```
-Seat enters: GRACE
+ACTIVE → GRACE
+
 Grace period: 72 hours
 ```
 
-**During grace:**
-- The owner still owns the Seat
-- The Seat remains available for takeover
-- The owner can top up
+During Grace:
+- Owner still owns Seat
 - Boardroom access remains active
-- The UI clearly warns the owner
+- Owner can top up
+- Seat can still be taken normally
 
 ```
 If top-up occurs:       GRACE → ACTIVE
@@ -222,18 +193,43 @@ If no top-up (72h):     GRACE → FORECLOSABLE
 
 Anyone may trigger foreclosure. After foreclosure: **Seat → VACANT**
 
+Notifications to owner at: 14 days, 7 days, 3 days, 24 hours, grace start.
+
 ---
 
-### Notifications
+### Seat Lifecycle
 
-Owners receive warnings at approximately:
-- 14 days coverage remaining
-- 7 days
-- 3 days
-- 24 hours
-- Grace started
+```
+VACANT
+   ↓
+TAKE SEAT
+   ↓
+ACTIVE
+   ↓
+REPRICE / TOP UP
+   ↓
+TAKEOVER
+   ↓
+NEW OWNER
+   ↓
+BALANCE DEPLETES
+   ↓
+GRACE
+   ↓
+TOP UP ─────────→ ACTIVE
 
-Top-up should require as few interactions as possible.
+OR
+
+GRACE
+   ↓
+72 HOURS
+   ↓
+FORECLOSABLE
+   ↓
+FORECLOSE
+   ↓
+VACANT
+```
 
 ---
 
@@ -259,48 +255,149 @@ RECENTLY TAKEN
 
 ### Seat Identity
 
-Every Seat has a permanent identity. **HOOD Seat #07** remains Seat #07 regardless of owner changes, foreclosure, or reacquisition. The Seat accumulates history.
+Every Seat is permanent. **HOOD Seat #007** remains Seat #007 regardless of owner changes, foreclosure, or reacquisition. What changes is ownership. The identity stays.
 
----
-
-### Technical Ownership
-
-Internally, Seats use unique onchain tokenized ownership. ERC-721 is the initial recommended implementation.
-
-**Do NOT show:**
-- NFT terminology
-- OpenSea links
-- Floor price / rarity / collection statistics
-- Mint terminology
-
-BOARD is not positioned as an NFT collection.
+Seat numbers are always displayed as three digits with leading zeros: `#001`, `#007`, `#100`.
 
 ---
 
 ### Seat History
 
-Every Seat develops provenance. Track:
-- First owner
-- Current owner
-- Previous owners
-- Acquisition timestamps
-- Takeover prices
-- Price changes
-- Longest ownership duration
-- Number of takeovers
-- Foreclosure history
-- Time held by current owner
+Seat history is an important part of the product. Track:
 
 ```
-HOOD / SEAT #07
+Current owner
+Previous owners
+Number of owners
+Takeover count
+Takeover prices
+Price changes
+Current holding duration
+Longest holding duration
+First acquisition date
+Foreclosure history
+Market events witnessed
+```
+
+Example:
+
+```
+HOOD / SEAT #007
 
 CURRENT OWNER   0x81...93
-PRICE           $82
-HELD            18 days
+PRICE           $84
+HELD            19D
 OWNERS          9
-TAKEOVERS       11
-LONGEST HOLD    43 days
+TAKEOVERS       13
+LONGEST HOLD    43D
 ```
+
+---
+
+### Takeover Economics
+
+Whenever somebody takes an occupied Seat:
+- **95%** → previous owner
+- **5%** → BOARD protocol
+
+Any remaining prepaid holding balance is refunded separately after accrued costs are settled.
+
+---
+
+### Revenue Philosophy
+
+BOARD currently has two native revenue sources:
+- Holding costs
+- Takeover fees
+
+These are genuine protocol revenues.
+
+**V1 must NOT automatically redistribute these to Seat holders.**
+
+Holding cost has a specific game-theoretic purpose: forcing users to honestly price Seats. Do not distort that mechanism to manufacture yield.
+
+The long-term goal is for Seats to eventually gain productive value from **external economic activity** — not from new Seat buyers recycling funds back to existing Seat holders.
+
+---
+
+### $BOARD Token
+
+Do NOT launch `$BOARD` in V1.
+
+A future token is not forbidden, but it must answer: *Why does the BOARD network actually need this token?*
+
+**Do not add a token because NFT projects currently have associated tokens.**
+
+---
+
+### ERC-6551 Direction
+
+ERC-6551 is a strong future fit. Eventually every Seat may have its own programmable onchain account.
+
+**Important engineering rule:** Architect for it. Do not ship it yet.
+
+We have not yet answered: *What should Seat #007 actually do with its account?* Do not build infrastructure before we know its purpose. Current Seat contracts should simply avoid making future ERC-6551 integration impossible.
+
+---
+
+### V1.5 — Robinhood Market Layer
+
+After the functional game works, integrate official Robinhood data. The terminal should show:
+
+```
+HOOD / ROBINHOOD MARKETS
+
+MARKET
+────────────────────────
+PRICE             $—
+STATE             OPEN
+STOCK TOKEN       0x...
+CORPORATE ACTION  NONE
+
+BOARD
+────────────────────────
+SEATS             100
+OWNED              82
+OPEN               18
+TAKES / 24H        31
+```
+
+---
+
+### Market Events
+
+Eventually real market events become part of Board history:
+- Earnings
+- Stock splits
+- Corporate actions
+- Market milestones
+- Robinhood Chain milestones
+
+These affect Board state, Seat history, Seat art, and community events.
+
+---
+
+### Seat Art Direction
+
+Individual Seats should eventually reveal beautiful generative/onchain art.
+
+**Do not use cartoon broker/PFP aesthetics.** Projects on Robinhood Chain already own that visual category. BOARD should be more abstract, financial, and historical.
+
+Seat art should derive from:
+```
+Seat number
+Board
+Age
+Number of owners
+Takeovers
+Holding history
+Market events witnessed
+Other permanent Seat state
+```
+
+**History is rarity.**
+
+Do NOT add arbitrary rarity scores (`Legendary / Epic / Rare / Common`) unless those statuses naturally emerge from real history. A Seat becomes interesting because of what happened to it.
 
 ---
 
@@ -311,68 +408,84 @@ Every wallet receives a BOARD profile.
 ```
 DAN
 
-CURRENT SEATS        4
-TOTAL SEATS OWNED   19
-TAKEOVERS MADE      27
-TIMES TAKEN OVER    11
-LONGEST HOLD        62d
+CURRENT SEATS        1
+TOTAL OWNED         19
+TAKEOVERS           27
+TIMES TAKEN         11
+LONGEST HOLD        62D
 
 CURRENT SEATS:
-  HOOD #07
+  HOOD #007
+```
+
+Future multi-board profile:
+
+```
+HOOD #007
+NVDA #021
+GME #003
 ```
 
 ---
 
 ### Boardroom
 
-Every Board has a private social space. Only current Seat owners may enter.
+Every market Board has a private Boardroom. **Only current Seat owners may access it.**
+
+Access is active if the user owns at least one ACTIVE or GRACE Seat on that Board.
+Access ends when they lose their final Seat. Access returns when they acquire another.
 
 ```
-HOOD BOARDROOM
-100 maximum members
+HOOD BOARDROOM — 100 maximum members
 ```
 
-Initial functionality:
-- Simple discussion
-- Market/event feed
+The Boardroom should combine:
+
+**MARKET**
+- Market feed
+- Corporate events
+- Stock Token state
+
+**COMMUNITY**
+- Discussion
+- Research
 - Polls
-- Announcements
-- Seat activity
+- Threads
 
-If a user loses their final Seat on that Board: access removed. If they take another Seat: access returns.
+**BOARD**
+- Takeovers
+- Open Seats
+- Most contested
+- Recently repriced
+
+Do not turn this into a DAO. BOARDROOM ≠ DAO. It is a scarce market community.
 
 ---
 
 ### Activity Feed
 
-BOARD must feel alive. Every important action appears publicly.
+BOARD must feel alive. The activity feed should feel like a **trading tape**, not a social newsfeed.
 
 ```
-HOOD #07 TAKEN
-0x81...93 → 0x42...17
-$81 · 8 seconds ago
-
-HOOD #21 REPRICED
-$54 → $73 · 34 seconds ago
-
-HOOD #44 TAKEN (First owner)
-$10 · 2 minutes ago
-
-HOOD #39 ENTERED GRACE
-8 minutes ago
+17:41:08    #007 TAKEN       $84
+17:40:51    #031 REPRICED    $52 → $68
+17:38:09    #082 ACQUIRED    $10
+17:37:11    #011 TOPPED UP   $5
 ```
+
+Dense rows. Timestamps prominent. No floating cards.
 
 ---
 
 ### Share Cards
 
-Share cards are part of V1. Every takeover generates a social card.
+Share cards are V1 product, not marketing polish. Every takeover generates a shareable card.
 
 ```
 HOOD BOARD
 
-SEAT #07
-JUST CHANGED HANDS
+SEAT #007
+CHANGED HANDS
 
 DAN → ALEX
 
@@ -389,16 +502,108 @@ Optimized for X and other social platforms. Purpose: turn every takeover into di
 
 ### Leaderboards
 
+Initial categories:
 - Most Takeovers
 - Longest Hold
-- Most Contested (Seats)
-- Highest Priced Seats
+- Most Contested Seats
+- Highest Seat Prices
 - Most Active Owners
+- Most Owners per Seat
 
 **Do NOT create:**
 - Profit leaderboards
 - Investment-return leaderboards
-- Speculative floor-price rankings
+- Speculative rankings
+
+---
+
+### North-Star Metric
+
+**Primary:** Takeovers per active Seat per week
+
+**Supporting funnel:**
+```
+VISIT
+ ↓
+TAKE SEAT
+ ↓
+SET PRICE
+ ↓
+RETURN
+ ↓
+DEFEND / LOSE
+ ↓
+TAKE AGAIN
+```
+
+**Strongest signal:** A user loses their Seat and voluntarily comes back to acquire another one.
+
+---
+
+### Design Direction (Locked)
+
+**FINANCIAL TERMINAL × COMPETITIVE GAME BOARD**
+
+Do NOT redesign into:
+- NFT marketplace
+- Gradient-heavy crypto website
+- Glassmorphism
+- Memecoin casino
+- Generic SaaS
+- PFP platform
+
+The product should feel like:
+```
+Bloomberg / trading terminal density
++
+Geist / Vercel structural discipline
++
+BOARD competitive game identity
+```
+
+**Visual rules:**
+- Dark mode default
+- Near-black background
+- White/neutral text
+- Thin borders
+- Hard grid structure
+- Minimal shadows
+- Restrained border radius
+- High information density
+- Strong whitespace hierarchy
+
+**Typography:**
+```
+Geist Sans  → general interface
+Geist Mono  → Seat IDs, prices, wallet addresses, timestamps, market data
+```
+
+**Accent color:**
+The lime/green accent (`#ccff00`) signals:
+- Primary action
+- Selected Seat
+- Your Seat
+- Live state
+- Important status
+
+Neutral white/gray should dominate. Do not make BOARD look like a neon casino.
+
+---
+
+### Landing Page
+
+Hero copy is locked:
+
+> **Own your seat.**
+> **Name your price.**
+> **Anyone can take it.**
+
+Supporting:
+> 100 seats around the HOOD market. Take one, set your price and defend your position. Every seat is always for sale.
+
+CTA: **ENTER HOOD BOARD**
+
+The landing page should preview the live Board. Do not explain Grace/foreclosure in the hero.
 
 ---
 
@@ -407,64 +612,45 @@ Optimized for X and other social platforms. Purpose: turn every takeover into di
 V1 does NOT:
 - Require ownership of HOOD Stock Tokens
 - Custody HOOD
-- Distribute HOOD
-- Generate HOOD yield
+- Distribute HOOD yield
 - Promise dividends
 - Represent ownership in Robinhood Markets
-- Automatically trade Stock Tokens
 
 BOARD creates a social ownership layer around the market.
 
 ---
 
-### Core Loop
+### Product Phases
 
+| Phase | Name | Goal |
+|---|---|---|
+| 0 | Backend Proof | Prove the ownership state machine on testnet |
+| 1 | Functional HOOD Board | 100 Seats, terminal UI, full lifecycle |
+| 1.5 | Robinhood Market Layer | Real HOOD price/state, market events |
+| 1.75 | Seat Art | Generative financial Seat art from history |
+| 2 | Programmable Seat Research | ERC-6551 exploration — answer "what should it do?" |
+| 3 | External Board Revenue | Identify ONE real external revenue source |
+| 4 | Productive Seats | Only after genuine external revenue exists |
+| 5 | More Official Boards | NVDA, GME, AAPL, META — only if HOOD works |
+| 6 | Creator Boards | Communities launch Boards around approved markets |
+| 7 | Token / Agents / Advanced | Only after actual network demand exists |
+
+---
+
+### V1 Forbidden Scope
+
+Do NOT add without explicit instruction:
 ```
-DISCOVER BOARD
-      ↓
-SEE 100 SEATS
-      ↓
-TAKE A VACANT SEAT
-OR TAKE SOMEONE ELSE'S
-      ↓
-SET YOUR PRICE
-      ↓
-FUND YOUR HOLDING BALANCE
-      ↓
-BECOME A BOARD MEMBER
-      ↓
-SOMEONE TAKES YOUR SEAT
-      ↓
-REACT / SHARE / RETURN
-      ↓
-TAKE ANOTHER SEAT
-      ↓
-REPEAT
+$BOARD token · points · yield · staking · Morpho · Uniswap
+Stock Token custody · Stock Token trading · AI agents · creator Boards
+Multiple Boards · referrals · DAO · governance · rarity · NFT marketplace
+OpenSea integration · arbitrary ERC-721 transfers · complex achievements
+Mobile app · portfolio products · ERC-6551 (yet)
 ```
 
 ---
 
-### North-Star Metric
-
-**Primary:** Takeovers per active Seat per week
-
-**Supporting:**
-- % of Seats occupied
-- Weekly active Seat owners
-- Repeat Seat ownership
-- % of users returning after losing a Seat
-- Repricing frequency
-- Average holding duration
-- Boardroom participation
-- Share-card usage
-- Seat turnover
-- Number of unique owners
-
-**Strongest behavioral signal:** Someone loses their Seat and voluntarily comes back to acquire another one.
-
----
-
-### What Success Looks Like
+### Success Definition
 
 **V1 is working if:**
 - Most Seats become occupied
@@ -489,63 +675,29 @@ REPEAT
 ### Product Principles
 
 1. **Seat, Never NFT** — Seat is the user-facing object.
-2. **Behavior Before Revenue** — The first Board is an experiment.
-3. **Scarcity Must Stay Real** — HOOD always has 100 Seats. Do not add more.
-4. **No Token Before Product Behavior** — No `$BOARD` in V1.
-5. **Social Before Financial Complexity** — Do not add yield before proving people care.
-6. **History Creates Culture** — Seat provenance accumulates permanently.
-7. **Blockchain Should Disappear** — Users interact with Seats, Prices, Balance, Boardroom, Takeovers — not blockchain mechanics.
-8. **Competition > Passive Holding** — Seat ownership must create decisions.
-9. **Build Less** — Anything not needed to prove the core loop goes into backlog.
+2. **Game First** — Prove behavior before layering revenue.
+3. **Behavior Before Revenue** — The first Board is an experiment.
+4. **Scarcity Must Stay Real** — HOOD always has 100 Seats. Do not increase supply.
+5. **History Creates Value** — Seat provenance accumulates permanently.
+6. **No Token Before Network Demand** — No `$BOARD` in V1.
+7. **Markets Create Communities** — The Board is a social layer, not a marketplace.
+8. **Do Not Force Yield** — Holding cost is a mechanism, not a fee to redistribute.
+9. **Blockchain Should Disappear** — Users interact with Seats, Prices, Balance, Boardroom, Takeovers — not blockchain mechanics.
+10. **Competition Over Passive Holding** — Seat ownership must create ongoing decisions.
+11. **Build Less** — Anything not needed to prove the core loop goes into backlog.
+12. **Do Not Copy Current NFT Metas** — Research what's technically possible; preserve BOARD's unique primitive.
 
 ---
 
-### Explicitly Out of Scope for V1
+### Founder Instruction
 
-Do NOT build:
-- `$BOARD`
-- Yield / staking
-- HOOD trading
-- Morpho / Uniswap integration
-- AI agents
-- Creator Boards
-- Multiple Boards
-- DAO / governance
-- Points / referral farming
-- Rarity system
-- NFT marketplace / external NFT trading
-- Complex achievements
-- Mobile app
+Do not modify the core product because a current NFT project is trending.
 
----
+Use research to understand:
+- What is technically possible
+- What users already understand
+- What economic models work
 
-### Phases
+But preserve BOARD's unique primitive:
 
-| Phase | Name | Description |
-|---|---|---|
-| 1 | Prove Ownership Game | HOOD, 100 Seats, core mechanics |
-| 2 | Social Depth | Richer Boardroom, achievements, notifications, better profiles |
-| 3 | More Official Boards | NVDA, AAPL, META, TSLA (only after demand) |
-| 4 | Creator Boards | Communities/creators launch Boards around approved markets |
-| 5 | Agent Participation | Agents participate under user-defined budgets |
-| 6 | Deeper Programmable-Market Integration | Market-specific integrations based on user behavior |
-
----
-
-### Positioning
-
-**Primary Tagline:** Own your seat. Name your price. Anyone can take it.
-
-**Alternative:** Take your seat in the market.
-
-**Description:** BOARD creates scarce, contestable Seats around programmable markets. Take a Seat, choose what it's worth, maintain it, join the Boardroom and defend your position—because anyone can take your Seat at the price you set.
-
----
-
-### Brand Vocabulary
-
-**Use:**
-Board · Seat · Take a Seat · Owner · Price · Takeover · Boardroom · Seat History · Holding Balance · Hold Your Seat · Lost Your Seat · Back on the Board
-
-**Avoid:**
-NFT · mint · NFT holder · collection · floor · rarity · NFT marketplace · token ID · JPEG
+**SCARCE, CONTESTABLE POSITIONS AROUND PROGRAMMABLE MARKETS.**
