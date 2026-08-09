@@ -1,5 +1,5 @@
 import { createConfig, http } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+import { injected } from 'wagmi/connectors/injected'
 import { defineChain } from 'viem'
 
 export const robinhoodTestnet = defineChain({

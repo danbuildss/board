@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAccount, useConnect, useDisconnect, useChainId } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+import { injected } from 'wagmi/connectors/injected'
 import { useQuery } from '@tanstack/react-query'
 import { fmtAddr, fmtTimestamp, eventLabel, padSeat } from '@/lib/format'
 import { CHAIN_ID } from '@/lib/config'

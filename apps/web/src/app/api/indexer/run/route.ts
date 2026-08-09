@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createPublicClient, http, defineChain, decodeEventLog, decodeFunctionData, type Log } from 'viem';
 import { pool } from '@/lib/db';
