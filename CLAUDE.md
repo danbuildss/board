@@ -341,6 +341,66 @@ Lose Boardroom access when no longer eligible
 
 ---
 
+### Seat Number Format
+
+Seat numbers are always three digits with leading zeros: `#001`, `#007`, `#100`.
+
+Never: `#7`, `#07`. Always: `#007`.
+
+---
+
+### Boardroom Access Rule
+
+A user has Boardroom access if they own at least one **ACTIVE or GRACE** Seat.
+
+Access ends when they lose their final Seat. Access returns when they acquire another.
+
+---
+
+### Design Direction (Locked)
+
+**FINANCIAL TERMINAL × COMPETITIVE GAME BOARD**
+
+Do NOT redesign into:
+- NFT marketplace
+- Gradient-heavy crypto website
+- Glassmorphism / memecoin casino
+- Generic SaaS dashboard / PFP platform
+
+**Visual rules:**
+- Dark mode default
+- Near-black background, white/neutral text
+- Thin borders, hard grid structure
+- Minimal shadows, restrained border radius
+- High information density, strong whitespace hierarchy
+
+**Typography:**
+```
+Geist Sans  → general interface
+Geist Mono  → Seat IDs, prices, wallet addresses, timestamps, market data
+```
+
+**Accent color:** `#ccff00` (lime/green)
+Used only for: primary action · selected Seat · your Seat · live state · important status.
+Neutral white/gray must dominate. Do not overuse.
+
+---
+
+### Activity Feed Format
+
+The activity feed is a trading tape, not a social newsfeed:
+
+```
+17:41:08    #007 TAKEN       $84
+17:40:51    #031 REPRICED    $52 → $68
+17:38:09    #082 ACQUIRED    $10
+17:37:11    #011 TOPPED UP   $5
+```
+
+Timestamps are always `HH:MM:SS`. Dense monospaced rows. No floating cards.
+
+---
+
 ### Design Phase Gate
 
 Only move to design-polish phase after:
