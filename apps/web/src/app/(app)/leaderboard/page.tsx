@@ -18,84 +18,86 @@ export default function LeaderboardPage() {
     queryFn: () => fetch('/api/leaderboards').then(r => r.json()),
   })
 
-  return (
-    <div className="page-scroll">
-      <div className="lb-wrap">
-        {isLoading ? (
-          <div className="empty-state"><span className="spinner" /></div>
-        ) : (
-          <div className="lb-grid">
-            <div>
-              <div className="section-title">Top Seat Holders</div>
-              <div className="lb-head">
-                <span>#</span>
-                <span>Wallet</span>
-                <span style={{ textAlign: 'right' }}>Seats</span>
-                <span />
-              </div>
-              {(data?.topHolders ?? []).map((row, i) => {
-                const isMe = row.owner.toLowerCase() === me
-                return (
-                  <Link
-                    key={i}
-                    href={`/profile/${row.owner}`}
-                    className={`lb-row${isMe ? ' me' : ''}`}
-                    style={{ textDecoration: 'none', display: 'grid',
-                      gridTemplateColumns: '28px 1fr auto 60px',
-                      gap: 8, padding: '7px 8px', borderBottom: '1px solid var(--bd)',
-                      fontSize: 12, alignItems: 'baseline', cursor: 'pointer' }}
-                  >
-                    <span className="lb-rank">{i + 1}</span>
-                    <span className="lb-addr">
-                      {fmtAddr(row.owner)}
-                      {isMe && <span className="you-tag">YOU</span>}
-                    </span>
-                    <span className="lb-val" style={{ textAlign: 'right' }}>{row.seats_held}</span>
-                    <span />
-                  </Link>
-                )
-              })}
-              {(data?.topHolders ?? []).length === 0 && (
-                <div className="empty-state">No data yet</div>
-              )}
-            </div>
+  if (isLoading) {
+    return (
+      <div className="page-scroll">
+        <div className="empty-state"><span className="spinner" /></div>
+      </div>
+    )
+  }
 
-            <div>
-              <div className="section-title">Most Takeovers</div>
-              <div className="lb-head">
-                <span>#</span>
-                <span>Wallet</span>
-                <span style={{ textAlign: 'right' }}>Takeovers</span>
-                <span />
-              </div>
-              {(data?.topTakeovers ?? []).map((row, i) => {
-                const isMe = row.wallet.toLowerCase() === me
-                return (
-                  <Link
-                    key={i}
-                    href={`/profile/${row.wallet}`}
-                    className={`lb-row${isMe ? ' me' : ''}`}
-                    style={{ textDecoration: 'none', display: 'grid',
-                      gridTemplateColumns: '28px 1fr auto 60px',
-                      gap: 8, padding: '7px 8px', borderBottom: '1px solid var(--bd)',
-                      fontSize: 12, alignItems: 'baseline', cursor: 'pointer' }}
-                  >
-                    <span className="lb-rank">{i + 1}</span>
-                    <span className="lb-addr">
-                      {fmtAddr(row.wallet)}
-                      {isMe && <span className="you-tag">YOU</span>}
-                    </span>
-                    <span className="lb-val" style={{ textAlign: 'right' }}>{row.takeovers}</span>
-                    <span />
-                  </Link>
-                )
-              })}
-              {(data?.topTakeovers ?? []).length === 0 && (
-                <div className="empty-state">No data yet</div>
-              )}
-            </div>
+  return (
+    <div className="lb-grid">
+      <div className="lb-section">
+        <div className="lb-section-head">
+          <div className="lb-section-title">Top Seat Holders</div>
+          <div className="lb-section-sub">Ranked by seats currently owned</div>
+        </div>
+        <div className="lb-table">
+          <div className="lb-head">
+            <span>#</span>
+            <span>Wallet</span>
+            <span style={{ textAlign: 'right' }}>Seats</span>
+            <span style={{ textAlign: 'right' }}>Value</span>
           </div>
-        )}
+          {(data?.topHolders ?? []).map((row, i) => {
+            const isMe = row.owner.toLowerCase() === me
+            return (
+              <Link
+                key={i}
+                href={`/profile/${row.owner}`}
+                className={`lb-row${isMe ? ' me' : ''}`}
+              >
+                <span className="lb-rank">{i + 1}</span>
+                <span className="lb-addr">
+                  {fmtAddr(row.owner)}
+                  {isMe && <span className="you-tag">YOU</span>}
+                </span>
+                <span className="lb-val">{row.seats_held}</span>
+                <span className="lb-sub">—</span>
+              </Link>
+            )
+          })}
+          {(data?.topHolders ?? []).length === 0 && (
+            <div className="empty-state">No data yet</div>
+          )}
+        </div>
+      </div>
+
+      <div className="lb-section">
+        <div className="lb-section-head">
+          <div className="lb-section-title">Top Takeover Initiators</div>
+          <div className="lb-section-sub">By takeovers completed all-time</div>
+        </div>
+        <div className="lb-table">
+          <div className="lb-head">
+            <span>#</span>
+            <span>Wallet</span>
+            <span style={{ textAlign: 'right' }}>Takeovers</span>
+            <span style={{ textAlign: 'right' }}>Volume</span>
+          </div>
+          {(data?.topTakeovers ?? []).map((row, i) => {
+            const isMe = row.wallet.toLowerCase() === me
+            return (
+              <Link
+                key={i}
+                href={`/profile/${row.wallet}`}
+                className={`lb-row${isMe ? ' me' : ''}`}
+              >
+                <span className="lb-rank">{i + 1}</span>
+                <span className="lb-addr">
+                  {fmtAddr(row.wallet)}
+                  {isMe && <span className="you-tag">YOU</span>}
+                </span>
+                <span className="lb-val">{row.takeovers}</span>
+                <span className="lb-sub">—</span>
+              </Link>
+            )
+          })}
+          {(data?.topTakeovers ?? []).length === 0 && (
+            <div className="empty-state">No data yet</div>
+          )}
+        </div>
       </div>
     </div>
   )

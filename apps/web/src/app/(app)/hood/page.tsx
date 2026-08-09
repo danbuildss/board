@@ -83,6 +83,8 @@ export default function HoodPage() {
   const stats = boardData?.stats
 
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [tooltipSeat, setTooltipSeat] = useState<Seat | null>(null)
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   const selectedSeat = seats.find(s => s.seatId === selectedId) ?? null
 
   const { data: detailData } = useQuery<SeatDetail>({
@@ -337,7 +339,10 @@ export default function HoodPage() {
                 <div
                   key={seat.seatId}
                   className={cls}
-                  onClick={() => setSelectedId(seat.seatId === selectedId ? null : seat.seatId)}
+                  onClick={() => { setTooltipSeat(null); setSelectedId(seat.seatId === selectedId ? null : seat.seatId) }}
+                  onMouseEnter={e => { setTooltipSeat(seat); setTooltipPos({ x: e.clientX, y: e.clientY }) }}
+                  onMouseMove={e => setTooltipPos({ x: e.clientX, y: e.clientY })}
+                  onMouseLeave={() => setTooltipSeat(null)}
                 >
                   <span className="stile-num">{padSeat(seat.seatId)}</span>
                   {seat.price && <span className="stile-price">{fmtUSDG(seat.price)}</span>}
@@ -483,6 +488,46 @@ export default function HoodPage() {
           </>
         )}
       </div>
+
+      {/* Seat tooltip */}
+      {tooltipSeat && (
+        <div
+          className="seat-tooltip"
+          style={{ left: tooltipPos.x + 16, top: tooltipPos.y + 16 }}
+        >
+          <div className="tt-head">HOOD / SEAT {padSeat(tooltipSeat.seatId)}</div>
+          {tooltipSeat.status !== 'VACANT' ? (
+            <>
+              <div className="tt-row">
+                <span className="tt-label">OWNER</span>
+                <span className="tt-val">{fmtAddr(tooltipSeat.owner!)}</span>
+              </div>
+              <div className="tt-row">
+                <span className="tt-label">PRICE</span>
+                <span className="tt-val">{fmtUSDG(tooltipSeat.price!)}</span>
+              </div>
+              <div className="tt-row">
+                <span className="tt-label">COST</span>
+                <span className="tt-val">{fmtUSDG(tooltipSeat.weeklyHoldingCost)}/WK</span>
+              </div>
+              <div className="tt-row">
+                <span className="tt-label">STATUS</span>
+                <span className="tt-val" style={{
+                  color: tooltipSeat.status === 'ACTIVE' ? 'var(--green)'
+                    : tooltipSeat.status === 'GRACE' ? 'var(--amber)' : 'var(--red)',
+                }}>
+                  {tooltipSeat.status}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="tt-row">
+              <span className="tt-label">STATUS</span>
+              <span className="tt-val" style={{ color: 'var(--t3)' }}>VACANT</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Modal */}
       {modal && selectedSeat && (

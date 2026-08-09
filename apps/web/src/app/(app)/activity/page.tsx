@@ -60,11 +60,11 @@ export default function ActivityPage() {
         ) : (
           <div className="act-table">
             <div className="act-head">
-              <span>TIME</span>
-              <span>SEAT</span>
               <span>EVENT</span>
+              <span>SEAT</span>
+              <span>ACTOR</span>
               <span>AMOUNT</span>
-              <span style={{ textAlign: 'right' }}>ACTOR</span>
+              <span style={{ textAlign: 'right' }}>TIME</span>
             </div>
             {events.map((ev, i) => {
               const label = eventLabel(ev.event_type)
@@ -75,15 +75,13 @@ export default function ActivityPage() {
                 : '—'
               return (
                 <div key={i} className="act-row">
-                  <span className="act-time">{fmtTimestamp(ev.occurred_at)}</span>
-                  <span className="act-seat">{padSeat(ev.seat_id)}</span>
                   <span>
                     <span className={`ev-pill ${EV_CLASS[label] ?? ''}`}>{label}</span>
                   </span>
+                  <span className="act-seat">{padSeat(ev.seat_id)}</span>
+                  <span className="act-actor">{ev.actor ? fmtAddr(ev.actor) : '—'}</span>
                   <span className="act-amt">{amt}</span>
-                  <span className="act-actor" style={{ textAlign: 'right' }}>
-                    {ev.actor ? fmtAddr(ev.actor) : '—'}
-                  </span>
+                  <span className="act-time">{fmtTimestamp(ev.occurred_at)}</span>
                 </div>
               )
             })}

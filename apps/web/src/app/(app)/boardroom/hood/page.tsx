@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAccount } from 'wagmi'
 import Link from 'next/link'
-import { fmtAddr, padSeat, fmtUSDG } from '@/lib/format'
+import { fmtAddr, padSeat, fmtUSDG, weeksRemaining } from '@/lib/format'
 
 type AccessData = {
   wallet: string
@@ -47,15 +47,10 @@ export default function BoardroomPage() {
   const hasAccess = accessData?.access ?? false
   const me = address?.toLowerCase()
 
-  // Build owner → seats map for active/grace seats
-  const ownerMap = new Map<string, Seat[]>()
-  for (const seat of seatsData?.seats ?? []) {
-    if (!seat.owner || (seat.status !== 'ACTIVE' && seat.status !== 'GRACE')) continue
-    const arr = ownerMap.get(seat.owner) ?? []
-    arr.push(seat)
-    ownerMap.set(seat.owner, arr)
-  }
-  const owners = Array.from(ownerMap.entries()).sort((a, b) => b[1].length - a[1].length)
+  // All active (and grace) seats sorted by seatId
+  const activeSeats = (seatsData?.seats ?? [])
+    .filter(s => s.owner && (s.status === 'ACTIVE' || s.status === 'GRACE'))
+    .sort((a, b) => a.seatId - b.seatId)
 
   if (!isConnected) {
     return (
@@ -122,57 +117,54 @@ export default function BoardroomPage() {
               </div>
               <div className="br-mrow">
                 <span className="br-ml">Members</span>
-                <span className="br-mv">{owners.length}</span>
+                <span className="br-mv">{activeSeats.length}</span>
               </div>
             </div>
 
-            {/* Members list */}
+            {/* Members list — individual seats */}
             <div>
               <div className="br-section-head">
-                <div className="br-section-title">Members</div>
-                <div className="br-section-sub">{owners.length} seat holders</div>
+                <div className="br-section-title">Current Members</div>
+                <div className="br-section-sub">{activeSeats.length} active seats</div>
               </div>
               <div className="br-list">
                 <div className="br-head">
-                  <span>Seats</span>
+                  <span>Seat</span>
                   <span>Wallet</span>
                   <span style={{ textAlign: 'right' }}>Price</span>
                   <span style={{ textAlign: 'right' }}>Balance</span>
-                  <span style={{ textAlign: 'right' }}>Status</span>
+                  <span style={{ textAlign: 'right' }}>Coverage</span>
                 </div>
-                {owners.length === 0 ? (
+                {activeSeats.length === 0 ? (
                   <div className="empty-state">No active members</div>
                 ) : (
-                  owners.map(([owner, ownerSeats]) => {
-                    const isMe = owner.toLowerCase() === me
-                    const primary = ownerSeats[0]
+                  activeSeats.map(seat => {
+                    const isMe = seat.owner?.toLowerCase() === me
+                    const wks = seat.price && seat.price !== '0'
+                      ? weeksRemaining(BigInt(seat.effectiveBalance), BigInt(seat.price))
+                      : '—'
                     return (
                       <Link
-                        key={owner}
-                        href={`/profile/${owner}`}
+                        key={seat.seatId}
+                        href={`/profile/${seat.owner}`}
                         className={`br-row${isMe ? ' me-row' : ''}`}
-                        style={{ textDecoration: 'none', display: 'grid',
-                          gridTemplateColumns: '40px 1fr 60px 70px 70px',
-                          gap: 8, padding: '7px 8px', borderBottom: '1px solid var(--bd)',
-                          fontSize: 12, alignItems: 'baseline', cursor: 'pointer' }}
                       >
-                        <span className="br-c1">{ownerSeats.length}</span>
+                        <span className="br-c1">{padSeat(seat.seatId)}</span>
                         <span className="br-c2">
-                          {fmtAddr(owner)}
+                          {fmtAddr(seat.owner!)}
                           {isMe && <span className="you-tag">YOU</span>}
                         </span>
                         <span className="br-c3">
-                          {primary.price ? fmtUSDG(primary.price) : '—'}
+                          {seat.price ? fmtUSDG(seat.price) : '—'}
                         </span>
-                        <span className="br-c4">{fmtUSDG(primary.effectiveBalance)}</span>
+                        <span className="br-c4">{fmtUSDG(seat.effectiveBalance)}</span>
                         <span
                           className="br-c5"
                           style={{
-                            color: primary.status === 'ACTIVE'
-                              ? 'var(--green)' : 'var(--amber)',
+                            color: seat.status === 'GRACE' ? 'var(--amber)' : 'var(--t3)',
                           }}
                         >
-                          {primary.status}
+                          {seat.status === 'GRACE' ? 'GRACE' : `${wks}w`}
                         </span>
                       </Link>
                     )
