@@ -1,0 +1,74 @@
+# DECISIONS.md
+
+Record of product and architecture decisions. Update when anything changes.
+Do not silently mutate economics or product behavior.
+
+Format:
+```
+## YYYY-MM-DD — Title
+
+Decision:
+Reason:
+Alternatives:
+Impact:
+```
+
+---
+
+## 2026-08-09 — Chain: Robinhood Chain
+
+Decision: Build on Robinhood Chain.
+
+Reason: Natural fit for HOOD as the first Board — same ecosystem, audience alignment.
+
+Alternatives: Base, Ethereum mainnet.
+
+Impact: All contracts deploy to Robinhood Chain. Testnet deployment targets Robinhood Chain testnet. Settlement asset must be a stable token supported on Robinhood Chain.
+
+---
+
+## 2026-08-09 — Single Board.sol contract
+
+Decision: Implement everything in a single `Board.sol` rather than separate contracts for Board registry and Seat token.
+
+Reason: Simpler architecture, fewer attack surfaces, easier to audit. A separate Seat token contract is only warranted if composability requirements emerge — none exist in V1.
+
+Alternatives: Separate `SeatToken.sol` (ERC-721) + `Board.sol` (economics).
+
+Impact: All Seat ownership, pricing, holding, takeover, grace, and foreclosure logic lives in one contract. Standard ERC-721 transfers are disabled/guarded within that contract.
+
+---
+
+## 2026-08-09 — Lazy settlement (no cron)
+
+Decision: Holding fees accrue mathematically. No keeper or cron required to charge fees. Fees settle during state-changing interactions (reprice, takeover, top-up, foreclosure).
+
+Reason: Simpler, cheaper, no keeper dependency. Grace and foreclosure eligibility are deterministically derivable from chain state.
+
+Alternatives: Keeper network, Chainlink Automation, scheduled settlement transactions.
+
+Impact: View functions must calculate effective current state. Backend must derive grace/depletion timestamps from contract parameters rather than waiting for an event.
+
+---
+
+## 2026-08-09 — Transfer restrictions: disable standard ERC-721 transfers
+
+Decision: Block `transferFrom` and `safeTransferFrom` on Seat tokens so ownership can only change through BOARD lifecycle actions (takeVacantSeat, takeSeat, forecloseSeat).
+
+Reason: Unrestricted transfers would bypass takeover fees, holding settlement, price mechanic, and Seat provenance. The ownership game only works if all transfers go through the protocol.
+
+Alternatives: Allow transfers but charge fees on them (complex, gameable).
+
+Impact: Seats are not tradeable on NFT marketplaces. This is intentional and aligns with product positioning (BOARD is not an NFT project).
+
+---
+
+## 2026-08-09 — Configurable settlement asset, no hardcoded address
+
+Decision: Settlement asset is a constructor/config parameter, not hardcoded.
+
+Reason: Robinhood Chain stable token address not yet confirmed. Avoids redeployment if it changes during development.
+
+Alternatives: Hardcode USDC address.
+
+Impact: Deployment scripts require settlement asset address as input. Tests use a mock ERC-20.
