@@ -84,3 +84,30 @@ Reason: The brief adds missing sections that were not in the original PRODUCT.md
 Alternatives: Leave PRODUCT.md as-is, rely on brief as separate document.
 
 Impact: PRODUCT.md is now the canonical source for all product decisions. CLAUDE.md updated with seat number format rule, boardroom access rule, design direction, and activity feed format. No contract changes. No economic changes.
+
+---
+
+## 2026-08-12 — Product direction: Productive Seat model
+
+Decision: Extend BOARD from a pure social ownership game to contestable Seats around a productive onchain market position. ACTIVE Seats earn from the Board's underlying strategy revenue. GRACE pauses accrual (gap not retroactively filled). Ownership transfers atomically bank the old owner's accrued earnings and begin the new owner's accrual. Time-weighted globalIndex accounting (no snapshot-based approach).
+
+New contract suite required:
+- `MockRewardToken.sol` — test ERC-20 representing strategy yield
+- `MockStrategyAdapter.sol` — simulated productive position (deposits MockRewardToken)
+- `BoardRewardsVault.sol` — holds deposited rewards, routes to RewardAccounting
+- `RewardAccounting.sol` — global index + per-seat index; hooks called by Board_v2 on lifecycle events
+- `Board_v2.sol` — wraps Board.sol state machine with reward hooks; `rewardAccounting == address(0)` = no-op (backward compatible with existing 73 tests)
+
+UI terminology: "Ask" replaces "Price" in consumer-facing display. Contract function names (`setSeatPrice`) stay unchanged.
+
+Reason: Per founder Master Product + Build Spec (2026-08-12). Goal: prove that productive cashflow + self-assessed pricing + holding cost + forced takeover produces a compelling contestable ownership market. The pure social game proves behavior; the productive layer proves economics.
+
+Alternatives: Keep pure social game (no earnings layer); add redistribution of holding costs (explicitly rejected — holding cost is a mechanism, not a fee to recycle).
+
+Impact:
+- Core Seat engine (Board.sol, 73 tests) unchanged — new contracts wrap it
+- HOOD hardcoding must be removed across indexer, API routes, and frontend (parameterize boardId / BoardConfig)
+- New DB tables: `reward_deposits`, `seat_reward_state`, `reward_claims`
+- New API endpoints: `/api/boards/:boardId/rewards`, `/api/boards/:boardId/seats/:seatId/rewards`, `/api/profiles/:wallet/rewards`
+- "Ask" display change is frontend-only (no contract change)
+- Do NOT display estimated/guaranteed future APY — show only realized revenue (24h, 7d, 30d)

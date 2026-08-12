@@ -7,23 +7,38 @@
 
 **BACKEND AND CONTRACTS FIRST.**
 
-Do not polish the frontend before the complete ownership economy works on testnet.
+Do not polish the frontend before the complete ownership + reward economy works on testnet.
 
-**Build order:**
+**Engineering priorities:**
 ```
-1. CONTRACT STATE MACHINE
-2. CONTRACT TESTS
-3. TESTNET DEPLOYMENT
-4. INDEXER
-5. BACKEND API
-6. MULTI-WALLET MANUAL TEST
-7. END-TO-END AUTOMATED TESTS
-8. FUNCTIONAL FRONTEND
-9. REAL USER TESTING
-10. DESIGN POLISH
+P0  Preserve Existing Seat Engine         ✅ DONE
+    (take, ask, holding, takeover, grace, foreclosure, 95/5, permanent identity)
+
+P1  Remove HOOD Hardcoding
+    (boardId / BoardConfig — system must be configurable, not HOOD-literal)
+
+P2  Finish Functional Terminal UI          ✅ DONE
+    (approved: financial terminal × competitive game direction)
+
+P3  Add Productive Simulator (testnet only)
+    MockStrategyAdapter · BoardRewardsVault · RewardAccounting · MockRewardToken
+
+P4  Implement Time-Weighted Reward Accounting
+    Only ACTIVE accrues · GRACE pauses · takeover splits atomically
+    No snapshot accounting · No double claims
+
+P5  Add Reward UI
+    Underlying source · 24h/7d/30d realized revenue
+    Seat earnings · holding cost · net productivity · Ask
+
+P6  Full End-to-End Test
+    Prove: revenue → accrual → takeover split → claim → grace pause → resume → foreclose
+
+P7  Private Test
+    5+ real users, full loop including reward claims
 ```
 
-Frontend polish is blocked until the backend proof milestone is complete.
+Design polish is blocked until P6 is complete.
 
 ---
 
@@ -87,24 +102,32 @@ Contracts own:
 
 **Prefer minimal architecture.**
 
-**Recommended: `Board.sol`**
+**`Board.sol` (v1, deployed ✅)**
+All core seat mechanics. Do not change unless technically required by reward hooks.
 
-Responsible for:
-- Permanent Seat identities
-- ERC-721-compatible ownership internally
-- 100 Seat supply
-- Vacant Seat acquisition
-- Seat pricing
-- Holding balances
-- Holding-fee accrual
-- Takeover
-- Top-up
-- Grace
-- Foreclosure
-- Protocol fee collection
-- Ownership history events
+**`Board_v2.sol` (new deployment required for P3/P4)**
+Identical to v1 plus reward hook calls at lifecycle boundaries:
+- `onSeatActivated` — after takeVacantSeat
+- `onOwnershipTransfer` — during takeSeat (atomic with ownership change)
+- `onSeatResumed` — when topUpSeat exits GRACE
+- `onSeatVacated` — during forecloseSeat
+- `onGraceEntered` — at depletion boundary (derived, called on first interaction after depletion)
 
-A separate Seat token contract is NOT required if a single Board contract is cleaner. Do not create unnecessary contract layers.
+If `rewardAccounting == address(0)`, all hooks are no-ops. The 73 existing tests run unchanged.
+
+**`RewardAccounting.sol` (new, P4)**
+Time-weighted per-seat accrual. Global reward index. Per-seat last-synced index. Claimable banking on ownership events. GRACE exclusion. Division-by-zero guard when activeSeatCount = 0.
+
+**`BoardRewardsVault.sol` (new, P3)**
+Receives revenue from MockStrategyAdapter. Calls `RewardAccounting.deposit(amount)`. Tracks total deposited for 24h/7d/30d windows.
+
+**`MockStrategyAdapter.sol` (new, P3, testnet only)**
+Simulates external realized revenue. Owner calls `drip(amount)` to push MockRewardToken to the vault. Configurable rate for automated drip.
+
+**`MockRewardToken.sol` (new, P3, testnet only)**
+Mintable ERC-20. Used as the simulated reward token. Owner can mint freely.
+
+A separate Seat token contract is NOT required.
 
 ---
 
@@ -759,15 +782,100 @@ Only after backend proof.
 
 ---
 
+### New Database Tables (P3/P4)
+
+```sql
+-- Revenue events from strategy adapter
+reward_deposits (
+  id, board_id, tx_hash, log_index, amount,
+  global_index_after, active_seat_count, deposited_at
+)
+
+-- Per-seat accrual state (indexed projection)
+seat_reward_state (
+  board_id, seat_id, seat_index, is_accruing,
+  banked_claimable, last_updated_at
+)
+
+-- Claim history
+reward_claims (
+  id, board_id, seat_id, claimant, amount, tx_hash, claimed_at
+)
+```
+
+### New API Endpoints (P5)
+
+```
+GET /api/boards/[boardId]/rewards
+  → { revenue24h, revenue7d, revenue30d, globalIndex, activeSeatCount }
+
+GET /api/boards/[boardId]/seats/[seatId]/earnings
+  → { accrued, claimable, banked, isAccruing }
+
+GET /api/profiles/[wallet]/rewards
+  → { totalClaimable, seats: [{ seatId, claimable }] }
+```
+
+### Time-Weighted Reward Math
+
+```
+globalIndex       — total (rewards / activeSeatCount) accumulated since genesis
+seatIndex[id]     — globalIndex value when seat's accrual last reset
+accruing[id]      — false during GRACE and VACANT
+
+onSeatActivated(id, owner):
+  seatIndex[id] = globalIndex; accruing[id] = true;
+
+onOwnershipTransfer(id, oldOwner, newOwner):
+  claimable[oldOwner] += globalIndex - seatIndex[id];   // bank old earnings
+  seatIndex[id] = globalIndex; accruing[id] = true;      // new owner starts fresh
+
+onGraceEntered(id, owner):
+  claimable[owner] += globalIndex - seatIndex[id];       // bank up to grace start
+  accruing[id] = false;
+
+onSeatResumed(id, owner):                                 // GRACE → ACTIVE via top-up
+  seatIndex[id] = globalIndex; accruing[id] = true;      // gap during GRACE is not filled
+
+onSeatVacated(id, oldOwner):                              // foreclosure
+  claimable[oldOwner] += globalIndex - seatIndex[id];
+  accruing[id] = false;
+
+deposit(amount):
+  if (activeSeatCount > 0) globalIndex += amount / activeSeatCount;
+  // if activeSeatCount == 0: revenue accumulates in vault as reserve
+```
+
+No snapshot-based accounting. No double claims. No division-by-zero.
+
+---
+
+### Reward Accrual Rules
+
+| Seat State | Accrues |
+|---|---|
+| ACTIVE | ✅ Yes |
+| GRACE | ❌ No |
+| VACANT | ❌ No |
+| FORECLOSABLE | ❌ No |
+
+GRACE gap (time between depletion and top-up) is permanently excluded from accrual.
+Previously earned rewards never move — they stay with the wallet that earned them.
+
+---
+
 ### Explicitly Out of Scope
 
 Do NOT build:
-- Protocol token / points / yield / staking
-- Morpho / Uniswap / Stock Token trading
+- $BOARD token / points / staking
+- Morpho / Uniswap / real LP management
+- Real NVDA/HOOD rewards (testnet uses mock only)
 - AI agents / creator Boards / multiple Boards
 - DAO / governance
 - NFT marketplace / OpenSea / arbitrary Seat transfers
 - Rarity / floor-price tracking
+- Reward multipliers
+- Estimated/guaranteed future APY displayed as fact
 - Complex achievements
 - Portfolio dashboard
 - Mobile app
