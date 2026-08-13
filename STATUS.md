@@ -24,8 +24,8 @@ P6  Reward API endpoints                        ✅ COMPLETE  (2026-08-13)
     /api/boards/[boardId]/rewards
     /api/boards/[boardId]/seats/[seatId]/rewards
     /api/profiles/[wallet]/rewards
-P7  Full lifecycle proof (testnet, incl.        🟡 7/9 base scenarios done
-    rewards E2E)                                    steps 8–9 + rewards need local machine
+P7  Full lifecycle proof (testnet, incl.        ✅ COMPLETE  (2026-08-13)
+    rewards E2E)                                    all 9 steps + reward E2E (R1–R6)
 P8  Functional frontend updates                 🔲 TODO  (base frontend ✅ merged PR #4)
     Net Carry · 4 core numbers · Rewards page
     New nav structure · Landing page
@@ -123,7 +123,6 @@ Grand total:     174 / 174  ✅
 
 ## Next (in order)
 
-1. **P7 — Testnet lifecycle proof**: deploy Board_v2 suite, run steps 8–9 (foreclose + retake), run reward E2E (deposit → accrue → bank → claim) — **requires local machine** (egress policy blocks testnet RPC from remote)
-2. **P8 — Frontend updates**: Net Carry display, 4 core numbers per seat (ASK / REALIZED REWARDS / HOLDING COST / NET CARRY), Rewards page, updated nav (BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE), landing page with live 10×10 preview
+1. **P8 — Frontend updates**: Net Carry display, 4 core numbers per seat (ASK / REALIZED REWARDS / HOLDING COST / NET CARRY), Rewards page, updated nav (BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE), landing page with live 10×10 preview
 3. **P9 — Simulator regimes**: MockStrategyAdapter configurable regimes (DEAD / QUIET / NORMAL / HIGH VOLUME / EVENT SPIKE / CRASH)
 4. **P10 — User testing**: 5+ real users complete full loop including reward claims
