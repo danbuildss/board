@@ -1,17 +1,53 @@
-import Link from 'next/link'
+'use client'
 
-const SEAT_STATES = [
-  'active','active','vacant','active','active','grace','active','active','vacant','active',
-  'active','vacant','active','active','active','active','foreclosable','active','active','active',
-  'vacant','active','active','grace','active','active','active','vacant','active','active',
-  'active','active','active','active','vacant','active','active','active','active','grace',
-  'active','grace','active','active','active','vacant','active','active','active','active',
-  'active','active','foreclosable','active','active','active','vacant','active','active','active',
-  'active','active','active','active','active','grace','active','active','vacant','active',
-  'vacant','active','active','active','active','active','active','grace','active','active',
-  'active','active','vacant','active','active','active','active','active','active','active',
-  'active','active','active','vacant','active','active','active','active','active','active',
-]
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+type Seat = { seatId: number; status: string }
+
+function LiveGrid() {
+  const [seats, setSeats] = useState<Seat[]>([])
+
+  useEffect(() => {
+    fetch('/api/boards/hood/seats')
+      .then(r => r.json())
+      .then((d: { seats: Seat[] }) => setSeats(d.seats ?? []))
+      .catch(() => {})
+  }, [])
+
+  const grid: Seat[] = Array.from({ length: 100 }, (_, i) => {
+    const id = i + 1
+    return seats.find(s => s.seatId === id) ?? { seatId: id, status: 'vacant' }
+  })
+
+  return (
+    <div className="mini-grid-wrap">
+      <div className="mini-grid">
+        {grid.map(s => (
+          <div key={s.seatId} className={`mdot ${s.status.toLowerCase()}`} />
+        ))}
+      </div>
+      <div className="mini-legend">
+        <div className="ml-item">
+          <div className="ml-dot" style={{ background: 'var(--green)' }} />
+          ACTIVE
+        </div>
+        <div className="ml-item">
+          <div className="ml-dot" style={{ background: 'var(--s3)' }} />
+          VACANT
+        </div>
+        <div className="ml-item">
+          <div className="ml-dot" style={{ background: 'var(--amber)' }} />
+          GRACE
+        </div>
+        <div className="ml-item">
+          <div className="ml-dot" style={{ background: 'var(--red)' }} />
+          FORECLOSE
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function LandingPage() {
   return (
@@ -51,31 +87,7 @@ export default function LandingPage() {
         </div>
 
         <div className="hero-right">
-          <div className="mini-grid-wrap">
-            <div className="mini-grid">
-              {SEAT_STATES.map((s, i) => (
-                <div key={i} className={`mdot ${s}`} />
-              ))}
-            </div>
-            <div className="mini-legend">
-              <div className="ml-item">
-                <div className="ml-dot" style={{ background: 'var(--green)' }} />
-                ACTIVE
-              </div>
-              <div className="ml-item">
-                <div className="ml-dot" style={{ background: '#1d2025' }} />
-                VACANT
-              </div>
-              <div className="ml-item">
-                <div className="ml-dot" style={{ background: 'var(--amber)' }} />
-                GRACE
-              </div>
-              <div className="ml-item">
-                <div className="ml-dot" style={{ background: 'var(--red)' }} />
-                FORECLOSE
-              </div>
-            </div>
-          </div>
+          <LiveGrid />
         </div>
       </div>
 

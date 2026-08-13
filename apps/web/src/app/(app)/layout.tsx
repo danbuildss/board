@@ -63,15 +63,18 @@ function Tape() {
 }
 
 const NAV = [
-  { href: '/hood',           label: 'BOARD' },
-  { href: '/activity',       label: 'ACTIVITY' },
-  { href: '/leaderboard',    label: 'LEADERS' },
-  { href: '/boardroom/hood', label: 'BOARDROOM' },
+  { href: '/hood',        label: 'BOARD' },
+  { href: '/genesis',     label: 'GENESIS' },
+  { href: '/activity',    label: 'ACTIVITY' },
+  { href: '/rewards',     label: 'REWARDS' },
+  { href: '/leaderboard', label: 'LEADERBOARD' },
+  { href: '/profile',     label: 'PROFILE' },
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const chainId = useChainId()
+  const { address } = useAccount()
   const wrongChain = chainId !== 0 && chainId !== CHAIN_ID
 
   return (
@@ -82,15 +85,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <span className="shell-badge">HOOD · 100 SEATS</span>
         </div>
         <nav className="shell-nav">
-          {NAV.map(n => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className={`nav-link${pathname.startsWith(n.href) ? ' active' : ''}`}
-            >
-              {n.label}
-            </Link>
-          ))}
+          {NAV.map(n => {
+            const href = n.href === '/profile'
+              ? (address ? `/profile/${address}` : '/profile')
+              : n.href
+            const active = n.href === '/profile'
+              ? pathname.startsWith('/profile')
+              : pathname.startsWith(n.href)
+            return (
+              <Link
+                key={n.href}
+                href={href}
+                className={`nav-link${active ? ' active' : ''}`}
+              >
+                {n.label}
+              </Link>
+            )
+          })}
         </nav>
         <WalletBtn />
       </header>
