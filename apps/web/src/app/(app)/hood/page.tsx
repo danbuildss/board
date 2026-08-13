@@ -38,6 +38,26 @@ type TxStep = 'form' | 'approving' | 'confirming' | 'done' | 'error'
 
 const VACANT_PRICE_RAW = 10_000_000n
 
+function ConcentricArt({ seatId }: { seatId: number }) {
+  const layers = [
+    { size: 56, color: '#1a2a00' },
+    { size: 44, color: '#2a4400' },
+    { size: 32, color: '#3a6000' },
+    { size: 22, color: '#5a9000' },
+    { size: 13, color: '#8acc00' },
+  ]
+  return (
+    <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      {layers.map((l, i) => (
+        <div key={i} style={{ position: 'absolute', width: l.size, height: l.size, border: `1px solid ${l.color}` }} />
+      ))}
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--green)', fontWeight: 700, zIndex: 1, letterSpacing: '.06em' }}>
+        {padSeat(seatId)}
+      </span>
+    </div>
+  )
+}
+
 function StatusBadge({ status }: { status: Seat['status'] }) {
   const labels: Record<string, string> = {
     VACANT: 'VACANT', ACTIVE: 'ACTIVE', GRACE: 'GRACE', FORECLOSABLE: 'FORECLOSABLE',
@@ -322,7 +342,7 @@ export default function HoodPage() {
             <div>
               <div className="board-market-label">MARKET</div>
               <div className="board-title-row">
-                <span className="board-title">HOOD BOARD</span>
+                <span className="board-title">BOARD #001 / GENESIS</span>
                 <span className="mkt-pill">100 SEATS</span>
               </div>
             </div>
@@ -366,9 +386,12 @@ export default function HoodPage() {
         {selectedSeat && (
           <>
             <div className="drawer-head">
-              <div>
-                <div className="drawer-seat-num">{padSeat(selectedSeat.seatId)}</div>
-                <StatusBadge status={selectedSeat.status} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <ConcentricArt seatId={selectedSeat.seatId} />
+                <div>
+                  <div className="drawer-seat-num">{padSeat(selectedSeat.seatId)}</div>
+                  <StatusBadge status={selectedSeat.status} />
+                </div>
               </div>
               <button className="drawer-close" onClick={() => setSelectedId(null)}>✕</button>
             </div>
@@ -534,20 +557,18 @@ export default function HoodPage() {
           className="seat-tooltip"
           style={{ left: tooltipPos.x + 16, top: tooltipPos.y + 16 }}
         >
-          <div className="tt-head">HOOD / SEAT {padSeat(tooltipSeat.seatId)}</div>
+          <div className="tt-head">SEAT {padSeat(tooltipSeat.seatId)}</div>
           {tooltipSeat.status !== 'VACANT' ? (
             <>
               <div className="tt-row">
-                <span className="tt-label">OWNER</span>
-                <span className="tt-val">{fmtAddr(tooltipSeat.owner!)}</span>
-              </div>
-              <div className="tt-row">
-                <span className="tt-label">PRICE</span>
+                <span className="tt-label">ASK</span>
                 <span className="tt-val">{fmtUSDG(tooltipSeat.price!)}</span>
               </div>
               <div className="tt-row">
-                <span className="tt-label">COST</span>
-                <span className="tt-val">{fmtUSDG(tooltipSeat.weeklyHoldingCost)}/WK</span>
+                <span className="tt-label">RUNWAY</span>
+                <span className="tt-val">
+                  {weeksRemaining(BigInt(tooltipSeat.effectiveBalance), BigInt(tooltipSeat.price ?? '0'))}w
+                </span>
               </div>
               <div className="tt-row">
                 <span className="tt-label">STATUS</span>
@@ -555,15 +576,23 @@ export default function HoodPage() {
                   color: tooltipSeat.status === 'ACTIVE' ? 'var(--green)'
                     : tooltipSeat.status === 'GRACE' ? 'var(--amber)' : 'var(--red)',
                 }}>
-                  {tooltipSeat.status}
+                  {tooltipSeat.status === 'ACTIVE' ? 'SAFE'
+                    : tooltipSeat.status === 'GRACE' ? 'GRACE'
+                    : 'AT RISK'}
                 </span>
               </div>
             </>
           ) : (
-            <div className="tt-row">
-              <span className="tt-label">STATUS</span>
-              <span className="tt-val" style={{ color: 'var(--t3)' }}>VACANT</span>
-            </div>
+            <>
+              <div className="tt-row">
+                <span className="tt-label">STATUS</span>
+                <span className="tt-val" style={{ color: 'var(--t3)' }}>VACANT</span>
+              </div>
+              <div className="tt-row">
+                <span className="tt-label">TAKE PRICE</span>
+                <span className="tt-val">$10.00</span>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -754,20 +783,34 @@ function ActionModal({
               Min {minPrepaid.toFixed(2)} · {wkFee.toFixed(4)}/week
             </div>
           </div>
-          <div className="cost-box">
-            <div className="crow">
-              <span>Takeover price</span>
-              <span className="cv">{fmtUSDG(seatPrice)}</span>
-            </div>
-            <div className="crow">
-              <span>Prepaid deposit</span>
-              <span className="cv">{fmtUSDG(prepaidRaw)}</span>
-            </div>
-            <div className="crow tot">
-              <span>Total</span>
-              <span className="cv">{fmtUSDG(seatPrice + prepaidRaw)}</span>
-            </div>
-          </div>
+          {(() => {
+            const protocolFee = seatPrice * 5n / 100n
+            const sellerReceives = seatPrice - protocolFee
+            return (
+              <div className="cost-box">
+                <div className="crow tot">
+                  <span>YOU PAY</span>
+                  <span className="cv">{fmtUSDG(seatPrice + prepaidRaw)}</span>
+                </div>
+                <div className="crow" style={{ paddingLeft: 12 }}>
+                  <span className="dim">Seat acquisition</span>
+                  <span className="cv dim">{fmtUSDG(seatPrice)}</span>
+                </div>
+                <div className="crow" style={{ paddingLeft: 12 }}>
+                  <span className="dim">Prepaid deposit</span>
+                  <span className="cv dim">{fmtUSDG(prepaidRaw)}</span>
+                </div>
+                <div className="crow" style={{ borderTop: '1px solid var(--bd0)', marginTop: 4, paddingTop: 4 }}>
+                  <span>SELLER RECEIVES</span>
+                  <span className="cv g">{fmtUSDG(sellerReceives)}</span>
+                </div>
+                <div className="crow">
+                  <span>PROTOCOL FEE</span>
+                  <span className="cv dim">{fmtUSDG(protocolFee)}</span>
+                </div>
+              </div>
+            )
+          })()}
         </>
       )
     }
@@ -795,7 +838,7 @@ function ActionModal({
       modal === 'topup' ? 'TOPPED UP' : 'FORECLOSED'
     return (
       <div className="share-card">
-        <div className="sc-label">HOOD BOARD</div>
+        <div className="sc-label">BOARD #001 / GENESIS</div>
         <div className="sc-seat">{padSeat(seat.seatId)}</div>
         <div className="sc-title">{actionLabel}</div>
         {txHash && (

@@ -62,9 +62,14 @@ function Tape() {
   )
 }
 
-const NAV = [
+const NAV_PUBLIC = [
+  { href: '/hood',     label: 'BOARD' },
+  { href: '/activity', label: 'ACTIVITY' },
+  { href: '/about',    label: 'ABOUT' },
+]
+
+const NAV_CONNECTED = [
   { href: '/hood',        label: 'BOARD' },
-  { href: '/boards',      label: 'BOARDS' },
   { href: '/activity',    label: 'ACTIVITY' },
   { href: '/rewards',     label: 'REWARDS' },
   { href: '/leaderboard', label: 'LEADERBOARD' },
@@ -76,28 +81,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const chainId = useChainId()
   const { address } = useAccount()
   const wrongChain = chainId !== 0 && chainId !== CHAIN_ID
+  const nav = address ? NAV_CONNECTED : NAV_PUBLIC
 
   return (
     <div className="shell">
       <header className="shell-header">
         <div className="shell-logo">
           <Link href="/">BOARD</Link>
-          <span className="shell-badge">HOOD · 100 SEATS</span>
+          <span className="shell-badge">GENESIS · 100 SEATS</span>
         </div>
         <nav className="shell-nav">
-          {NAV.map(n => {
-            const href = n.href
-            const active = pathname.startsWith(n.href)
-            return (
-              <Link
-                key={n.href}
-                href={href}
-                className={`nav-link${active ? ' active' : ''}`}
-              >
-                {n.label}
-              </Link>
-            )
-          })}
+          {nav.map(n => (
+            <Link
+              key={n.href}
+              href={n.href}
+              className={`nav-link${pathname.startsWith(n.href) ? ' active' : ''}`}
+            >
+              {n.label}
+            </Link>
+          ))}
         </nav>
         <WalletBtn />
       </header>
