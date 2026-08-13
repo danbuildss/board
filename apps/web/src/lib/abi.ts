@@ -47,6 +47,22 @@ export const BOARD_ABI = [
   },
 ] as const
 
+export const MOCK_STRATEGY_ABI = [
+  {
+    type: 'function', name: 'simulateYield', stateMutability: 'nonpayable',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+  },
+] as const
+
+export const BOARD_VAULT_ABI = [
+  {
+    type: 'function', name: 'collectAndDeposit', stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: [],
+  },
+] as const
+
 export const ERC20_ABI = [
   {
     type: 'function', name: 'approve', stateMutability: 'nonpayable',
