@@ -1,6 +1,6 @@
-import { parseAbiItem, decodeEventLog, type Log } from 'viem';
+import { decodeEventLog, type Log } from 'viem';
 import { publicClient } from './chain.js';
-import { BOARD_ABI } from './abi.js';
+import { BOARD_ABI, REWARD_ACCOUNTING_ABI } from './abi.js';
 import { config } from './config.js';
 import { getLastIndexedBlock, saveLastIndexedBlock } from './db.js';
 import {
@@ -11,20 +11,18 @@ import {
   handleHoldingFeesSettled,
   handleSeatForeclosed,
 } from './handlers.js';
+import {
+  handleRewardDeposited,
+  handleEarningsBanked,
+  handleRewardClaimed,
+} from './reward-handlers.js';
 
-// All event signatures for getLogs filter
-const EVENT_NAMES = [
-  'SeatAcquired', 'SeatPriceChanged', 'SeatTaken',
-  'SeatToppedUp', 'HoldingFeesSettled', 'SeatForeclosed',
-] as const;
-
-async function processLog(log: Log): Promise<void> {
-  // Decode the log against our ABI
+async function processBoardLog(log: Log): Promise<void> {
   let decoded: ReturnType<typeof decodeEventLog>;
   try {
     decoded = decodeEventLog({ abi: BOARD_ABI, data: log.data, topics: log.topics });
   } catch {
-    return; // Unknown event — skip
+    return;
   }
 
   const args = decoded.args as Record<string, unknown>;
@@ -51,12 +49,68 @@ async function processLog(log: Log): Promise<void> {
   }
 }
 
-async function fetchBatch(fromBlock: bigint, toBlock: bigint): Promise<Log[]> {
-  return publicClient.getLogs({
-    address: config.boardAddress,
-    fromBlock,
-    toBlock,
-  });
+async function processRewardLog(log: Log): Promise<void> {
+  let decoded: ReturnType<typeof decodeEventLog>;
+  try {
+    decoded = decodeEventLog({ abi: REWARD_ACCOUNTING_ABI, data: log.data, topics: log.topics });
+  } catch {
+    return;
+  }
+
+  const args = decoded.args as Record<string, unknown>;
+
+  // Block timestamp is not in reward events — fetch the block to get it
+  let blockTimestamp = 0n;
+  try {
+    const block = await publicClient.getBlock({ blockNumber: log.blockNumber! });
+    blockTimestamp = block.timestamp;
+  } catch {
+    // Non-fatal: blockTimestamp will be 0 and stored as epoch
+  }
+
+  switch (decoded.eventName) {
+    case 'RewardDeposited':
+      await handleRewardDeposited(log, {
+        ...(args as Parameters<typeof handleRewardDeposited>[1]),
+        blockTimestamp,
+      });
+      break;
+    case 'EarningsBanked':
+      await handleEarningsBanked(log, {
+        ...(args as Parameters<typeof handleEarningsBanked>[1]),
+        blockTimestamp,
+      });
+      break;
+    case 'RewardClaimed':
+      await handleRewardClaimed(log, {
+        ...(args as Parameters<typeof handleRewardClaimed>[1]),
+        blockTimestamp,
+      });
+      break;
+  }
+}
+
+async function fetchBatch(fromBlock: bigint, toBlock: bigint): Promise<{ boardLogs: Log[]; rewardLogs: Log[] }> {
+  const addresses: `0x${string}`[] = [config.boardAddress];
+  if (config.rewardAccountingAddress) {
+    addresses.push(config.rewardAccountingAddress);
+  }
+
+  const allLogs = await publicClient.getLogs({ address: addresses, fromBlock, toBlock });
+
+  const boardLogs: Log[] = [];
+  const rewardLogs: Log[] = [];
+  const raAddr = config.rewardAccountingAddress?.toLowerCase();
+
+  for (const log of allLogs) {
+    if (raAddr && log.address.toLowerCase() === raAddr) {
+      rewardLogs.push(log);
+    } else {
+      boardLogs.push(log);
+    }
+  }
+
+  return { boardLogs, rewardLogs };
 }
 
 function sleep(ms: number): Promise<void> {
@@ -97,15 +151,19 @@ export async function runIndexer(): Promise<void> {
       ? fromBlock + config.batchSize - 1n
       : latestBlock;
 
-    const logs = await withRetry(
+    const { boardLogs, rewardLogs } = await withRetry(
       () => fetchBatch(fromBlock, toBlock),
       `getLogs(${fromBlock}-${toBlock})`
     );
 
-    if (logs.length > 0) {
-      console.log(`[indexer] Block ${fromBlock}–${toBlock}: ${logs.length} event(s)`);
-      for (const log of logs) {
-        await processLog(log);
+    const total = boardLogs.length + rewardLogs.length;
+    if (total > 0) {
+      console.log(`[indexer] Block ${fromBlock}–${toBlock}: ${boardLogs.length} board / ${rewardLogs.length} reward event(s)`);
+      for (const log of boardLogs) {
+        await processBoardLog(log);
+      }
+      for (const log of rewardLogs) {
+        await processRewardLog(log);
       }
     }
 

@@ -32,9 +32,11 @@ export async function saveLastIndexedBlock(block: bigint): Promise<void> {
 }
 
 export async function resetForRebuild(): Promise<void> {
-  await pool.query('TRUNCATE seat_events, seats RESTART IDENTITY CASCADE');
+  await pool.query(
+    'TRUNCATE seat_events, seats, reward_deposits, seat_reward_state, reward_claims RESTART IDENTITY CASCADE'
+  );
   await pool.query(`DELETE FROM indexer_state`);
-  console.log('[db] Cleared seat_events, seats, indexer_state for rebuild');
+  console.log('[db] Cleared seat_events, seats, reward tables, indexer_state for rebuild');
 }
 
 export async function ensureBoard(): Promise<void> {
