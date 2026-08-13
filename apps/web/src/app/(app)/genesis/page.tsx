@@ -31,7 +31,7 @@ type ActivityEvent = {
 export default function GenesisPage() {
   const { data: boardData } = useQuery<BoardData>({
     queryKey: ['board-genesis'],
-    queryFn: () => fetch('/api/boards/hood').then(r => r.json()),
+    queryFn: () => fetch('/api/boards/genesis').then(r => r.json()),
   })
 
   const { data: activityData } = useQuery<{ activity: ActivityEvent[] }>({

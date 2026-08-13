@@ -63,13 +63,13 @@ function Tape() {
 }
 
 const NAV_PUBLIC = [
-  { href: '/hood',     label: 'BOARD' },
+  { href: '/board/genesis',     label: 'BOARD' },
   { href: '/activity', label: 'ACTIVITY' },
   { href: '/about',    label: 'ABOUT' },
 ]
 
 const NAV_CONNECTED = [
-  { href: '/hood',        label: 'BOARD' },
+  { href: '/board/genesis',        label: 'BOARD' },
   { href: '/activity',    label: 'ACTIVITY' },
   { href: '/rewards',     label: 'REWARDS' },
   { href: '/leaderboard', label: 'LEADERBOARD' },
@@ -95,7 +95,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link
               key={n.href}
               href={n.href}
-              className={`nav-link${pathname.startsWith(n.href) ? ' active' : ''}`}
+              className={`nav-link${pathname === n.href || pathname.startsWith(n.href + '/') ? ' active' : ''}`}
             >
               {n.label}
             </Link>

@@ -54,10 +54,10 @@ export default function AboutPage() {
 
         <div style={{ borderTop: '1px solid var(--bd0)', paddingTop: 32, marginBottom: 32 }}>
           <h2 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 16 }}>
-            GENESIS BOARD — HOOD
+            BOARD #001 / GENESIS
           </h2>
           <p style={{ fontSize: 14, color: 'var(--t2)', lineHeight: 1.75, marginBottom: 12 }}>
-            The first Board is HOOD, deployed on Robinhood Chain Testnet (Chain 46630).
+            The first Board is BOARD #001 / GENESIS, deployed on Robinhood Chain Testnet (Chain 46630).
             It proves the core mechanics: take, hold, reprice, top-up, takeover, grace,
             and foreclosure — with exact financial reconciliation at every step.
           </p>
@@ -69,7 +69,7 @@ export default function AboutPage() {
 
         <div style={{ borderTop: '1px solid var(--bd0)', paddingTop: 32 }}>
           <h2 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 16 }}>
-            CONTRACTS · HOOD CHAIN TESTNET (46630)
+            CONTRACTS · ROBINHOOD CHAIN TESTNET (46630)
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[

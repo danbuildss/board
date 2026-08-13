@@ -32,11 +32,11 @@ export default function BoardsPage() {
   const [stats, setStats] = useState<BoardStats | null>(null)
 
   useEffect(() => {
-    fetch('/api/boards/hood/seats')
+    fetch('/api/boards/genesis/seats')
       .then(r => r.json())
       .then((d: { seats: Seat[] }) => setSeats(d.seats ?? []))
       .catch(() => {})
-    fetch('/api/boards/hood')
+    fetch('/api/boards/genesis')
       .then(r => r.json())
       .then((d: { stats: BoardStats }) => setStats(d.stats))
       .catch(() => {})
@@ -77,7 +77,7 @@ export default function BoardsPage() {
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">NETWORK</div>
               <div className="boards-hero-stat-val" style={{ fontSize: 12, color: 'var(--t3)' }}>TESTNET</div>
-              <div className="boards-hero-stat-sub">hood chain 46630</div>
+              <div className="boards-hero-stat-sub">Robinhood Chain 46630</div>
             </div>
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">ACTIVE SEATS</div>
@@ -148,7 +148,7 @@ export default function BoardsPage() {
                 <div className="fbc-metric-val g">{highestAsk > 0n ? fmtUSDG(String(highestAsk)) : '—'}</div>
               </div>
             </div>
-            <Link href="/hood" className="fbc-enter-btn">Enter HOOD Board →</Link>
+            <Link href="/board/genesis" className="fbc-enter-btn">Enter BOARD #001 / GENESIS →</Link>
           </div>
 
           {/* Right panel */}
@@ -184,7 +184,7 @@ export default function BoardsPage() {
               </div>
               <div className="fbc-stat-row">
                 <span className="fbc-stat-label">NETWORK</span>
-                <span className="fbc-stat-val" style={{ fontSize: 10, color: 'var(--t3)' }}>HOOD CHAIN 46630</span>
+                <span className="fbc-stat-val" style={{ fontSize: 10, color: 'var(--t3)' }}>ROBINHOOD CHAIN 46630</span>
               </div>
             </div>
           </div>

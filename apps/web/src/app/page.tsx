@@ -113,7 +113,7 @@ function BoardTerminal({ seats }: { seats: Seat[] }) {
   return (
     <div className="board-terminal">
       <div className="bt-header">
-        <span className="bt-title">BOARD #001 · HOOD / USDG</span>
+        <span className="bt-title">BOARD #001 / GENESIS · USDG</span>
         <span className="bt-live">
           <span className="bt-live-dot" />
           LIVE
@@ -192,7 +192,7 @@ function BoardTerminal({ seats }: { seats: Seat[] }) {
       </div>
 
       <div style={{ padding: '8px 16px', borderTop: '1px solid var(--bd0)' }}>
-        <Link href="/hood" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--green)', letterSpacing: '.04em' }}>
+        <Link href="/board/genesis" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--green)', letterSpacing: '.04em' }}>
           VIEW BOARD →
         </Link>
       </div>
@@ -207,7 +207,7 @@ export default function LandingPage() {
   const [featuredSeat, setFeaturedSeat] = useState<Seat | null>(null)
 
   useEffect(() => {
-    fetch('/api/boards/hood/seats')
+    fetch('/api/boards/genesis/seats')
       .then(r => r.json())
       .then((d: { seats: Seat[] }) => {
         const s = d.seats ?? []
@@ -220,7 +220,7 @@ export default function LandingPage() {
       })
       .catch(() => {})
 
-    fetch('/api/boards/hood')
+    fetch('/api/boards/genesis')
       .then(r => r.json())
       .then((d: { stats: BoardStats }) => setStats(d.stats ?? null))
       .catch(() => {})
@@ -249,13 +249,13 @@ export default function LandingPage() {
         <Link href="/" className="l-logo">BOARD</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <span style={{ color: 'var(--green)', fontSize: 8, marginRight: 4 }}>●</span>
-          <Link href="/hood"        className="l-nav-link first">BOARD</Link>
+          <Link href="/board/genesis"        className="l-nav-link first">BOARD</Link>
           <Link href="/activity"    className="l-nav-link">ACTIVITY</Link>
           <Link href="/rewards"     className="l-nav-link">REWARDS</Link>
           <Link href="/leaderboard" className="l-nav-link">LEADERBOARD</Link>
           <Link href="/about"       className="l-nav-link">ABOUT</Link>
         </div>
-        <Link href="/hood" className="l-nav-enter">ENTER BOARD →</Link>
+        <Link href="/board/genesis" className="l-nav-enter">ENTER BOARD →</Link>
       </nav>
 
       {/* ── Hero ── */}
@@ -282,7 +282,7 @@ export default function LandingPage() {
           </p>
 
           <div className="hero-cta-row">
-            <Link href="/hood" className="cta-primary">ENTER BOARD →</Link>
+            <Link href="/board/genesis" className="cta-primary">ENTER BOARD →</Link>
             <a href="#how" className="cta-secondary">HOW IT WORKS ▷</a>
           </div>
 
@@ -436,7 +436,7 @@ export default function LandingPage() {
           <div className="l-panel-label" style={{ padding: '0 28px', height: 40, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--bd0)' }}>
             FEATURED SEAT
             {featuredSeat && (
-              <Link href="/hood" className="l-panel-link">VIEW SEAT →</Link>
+              <Link href="/board/genesis" className="l-panel-link">VIEW SEAT →</Link>
             )}
           </div>
           {featuredSeat ? (
@@ -467,7 +467,7 @@ export default function LandingPage() {
                       : '—'}
                   </div>
                 </div>
-                <Link href="/hood" className="l-view-seat-btn">
+                <Link href="/board/genesis" className="l-view-seat-btn">
                   VIEW SEAT <span>→</span>
                 </Link>
               </div>

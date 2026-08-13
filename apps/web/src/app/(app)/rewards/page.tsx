@@ -33,7 +33,7 @@ export default function RewardsPage() {
 
   const { data: boardRewards, isLoading: boardLoading } = useQuery<BoardRewards>({
     queryKey: ['board-rewards'],
-    queryFn: () => fetch('/api/boards/hood/rewards').then(r => r.json()),
+    queryFn: () => fetch('/api/boards/genesis/rewards').then(r => r.json()),
     refetchInterval: 30_000,
   })
 
@@ -106,7 +106,7 @@ export default function RewardsPage() {
                     </div>
                     {walletRewards.activeSeatsAccruing.map(s => (
                       <div key={s.seatId} className="rw-seat-row">
-                        <Link href="/hood" className="rw-seat-id">
+                        <Link href="/board/genesis" className="rw-seat-id">
                           {padSeat(s.seatId)}
                         </Link>
                         <span className="rw-seat-val g">{fmtUSDG(s.cumulativeBanked)}</span>

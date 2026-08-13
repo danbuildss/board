@@ -103,7 +103,7 @@ export default function ProfilePage() {
               {data.seats.map(s => (
                 <Link
                   key={s.seat_id}
-                  href="/hood"
+                  href="/board/genesis"
                   className="pf-seat-row"
                   style={{ textDecoration: 'none' }}
                 >

@@ -2,12 +2,14 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt } from '@/lib/status';
+import { resolveBoard } from '@/lib/board-resolver';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ boardId: string; seatId: string }> }
 ) {
-  const { boardId, seatId: seatIdStr } = await params;
+  const { boardId: rawBoardId, seatId: seatIdStr } = await params;
+  const boardId = resolveBoard(rawBoardId);
   const seatId = parseInt(seatIdStr, 10);
 
   if (isNaN(seatId) || seatId < 1) {
