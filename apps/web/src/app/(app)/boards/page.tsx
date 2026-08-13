@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { fmtUSDG, padSeat } from '@/lib/format'
 
 type Seat = { seatId: number; status: string; price?: string }
@@ -27,41 +26,6 @@ function MiniGrid({ seats }: { seats: Seat[] }) {
   )
 }
 
-const UPCOMING = [
-  {
-    num: '#002',
-    name: 'TSLA',
-    sub: 'Tesla Board',
-    badge: 'upcoming',
-    tags: ['EV', 'MEME', 'VOLATILE'],
-    seats: 100,
-    price: '$10',
-    rate: '0.5%/wk',
-    chain: 'TBD',
-  },
-  {
-    num: '#003',
-    name: 'AAPL',
-    sub: 'Apple Board',
-    badge: 'upcoming',
-    tags: ['TECH', 'LARGE-CAP'],
-    seats: 100,
-    price: '$25',
-    rate: '0.5%/wk',
-    chain: 'TBD',
-  },
-  {
-    num: '#004',
-    name: 'AMZN',
-    sub: 'Amazon Board',
-    badge: 'researching',
-    tags: ['TECH', 'COMMERCE', 'CLOUD'],
-    seats: 100,
-    price: 'TBD',
-    rate: '0.5%/wk',
-    chain: 'TBD',
-  },
-]
 
 export default function BoardsPage() {
   const [seats, setSeats] = useState<Seat[]>([])
@@ -108,12 +72,12 @@ export default function BoardsPage() {
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">LIVE BOARDS</div>
               <div className="boards-hero-stat-val g">1</div>
-              <div className="boards-hero-stat-sub">HOOD</div>
+              <div className="boards-hero-stat-sub">GENESIS</div>
             </div>
             <div className="boards-hero-stat">
-              <div className="boards-hero-stat-label">COMING SOON</div>
-              <div className="boards-hero-stat-val">3</div>
-              <div className="boards-hero-stat-sub">announced</div>
+              <div className="boards-hero-stat-label">NETWORK</div>
+              <div className="boards-hero-stat-val" style={{ fontSize: 12, color: 'var(--t3)' }}>TESTNET</div>
+              <div className="boards-hero-stat-sub">hood chain 46630</div>
             </div>
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">ACTIVE SEATS</div>
@@ -226,50 +190,18 @@ export default function BoardsPage() {
           </div>
         </div>
 
-        {/* Upcoming boards */}
+        {/* Future markets */}
         <div className="upcoming-section">
-          <div className="upcoming-label">UPCOMING BOARDS</div>
-          <div className="upcoming-grid">
-            {UPCOMING.map(board => (
-              <div key={board.num} className="upcoming-card">
-                <div className="uc-status">
-                  <span className="uc-num">{board.num}</span>
-                  <span className={`uc-badge ${board.badge}`}>{board.badge.toUpperCase()}</span>
-                </div>
-                <div className="uc-art">
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 900, color: 'var(--bd2)', letterSpacing: '-.02em' }}>
-                    {board.name}
-                  </span>
-                </div>
-                <div>
-                  <div className="uc-name">{board.name}</div>
-                  <div className="uc-sub">{board.sub}</div>
-                </div>
-                <div className="uc-tags">
-                  {board.tags.map(t => (
-                    <span key={t} className="uc-tag">{t}</span>
-                  ))}
-                </div>
-                <div className="uc-meta-grid">
-                  <div className="uc-meta">
-                    <div className="uc-meta-label">SEATS</div>
-                    <div className="uc-meta-val">{board.seats}</div>
-                  </div>
-                  <div className="uc-meta">
-                    <div className="uc-meta-label">START PRICE</div>
-                    <div className="uc-meta-val">{board.price}</div>
-                  </div>
-                  <div className="uc-meta">
-                    <div className="uc-meta-label">RATE</div>
-                    <div className="uc-meta-val">{board.rate}</div>
-                  </div>
-                  <div className="uc-meta">
-                    <div className="uc-meta-label">CHAIN</div>
-                    <div className="uc-meta-val">{board.chain}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="upcoming-label">FUTURE BOARDS</div>
+          <div style={{ border: '1px solid var(--bd0)', borderRadius: 'var(--r-sm)', padding: '32px 40px', background: 'var(--bg1)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--t3)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 12 }}>
+              GENESIS COMPLETE
+            </div>
+            <p style={{ fontSize: 14, color: 'var(--t2)', lineHeight: 1.75, marginBottom: 0, maxWidth: 560 }}>
+              BOARD #001 / GENESIS is the first productive market. Additional Boards launching
+              new productive positions will be announced once the genesis mechanics are
+              proven on testnet. No future Boards are announced at this time.
+            </p>
           </div>
         </div>
 

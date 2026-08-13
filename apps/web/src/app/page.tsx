@@ -360,33 +360,40 @@ export default function LandingPage() {
             <div className="l-how-step-num">01</div>
             <div className="l-how-step-icon">◻</div>
             <div className="l-how-step-title">TAKE A SEAT</div>
-            <p className="l-how-step-text">Choose a vacant seat or take one from another owner by paying their ask.</p>
+            <p className="l-how-step-text">Pay $10 to claim a vacant seat — or pay any owner&apos;s ask price to take theirs.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">02</div>
             <div className="l-how-step-icon">⬡</div>
             <div className="l-how-step-title">SET YOUR PRICE</div>
-            <p className="l-how-step-text">Set your ask price. Higher ask = stronger defense, higher cost.</p>
+            <p className="l-how-step-text">Name your ask. Higher ask = harder to take, but also higher weekly holding cost.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">03</div>
-            <div className="l-how-step-icon">◎</div>
-            <div className="l-how-step-title">EARN WHILE YOU HOLD</div>
-            <p className="l-how-step-text">Earn a share of the board&apos;s realized yield as long as you hold your seat.</p>
+            <div className="l-how-step-icon">▣</div>
+            <div className="l-how-step-title">FUND YOUR HOLD</div>
+            <p className="l-how-step-text">Prepay holding costs to stay active. Let it run dry and your seat enters grace.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">04</div>
+            <div className="l-how-step-icon">◎</div>
+            <div className="l-how-step-title">EARN WHILE YOU HOLD</div>
+            <p className="l-how-step-text">Active seats earn a pro-rata share of the board&apos;s productive revenue every cycle.</p>
+            <div className="l-how-arrow">→</div>
+          </div>
+          <div className="l-how-step">
+            <div className="l-how-step-num">05</div>
             <div className="l-how-step-icon">⊕</div>
-            <div className="l-how-step-title">ANYONE CAN TAKE IT</div>
-            <p className="l-how-step-text">Anyone can take your seat at your ask. Stay sharp or lose your seat.</p>
+            <div className="l-how-step-title">DEFEND YOUR SEAT</div>
+            <p className="l-how-step-text">Anyone can take your seat at any time. Reprice, top up, or let them have it.</p>
           </div>
         </div>
         <div className="l-how-footer">
-          <p className="l-how-footer-line">It&apos;s a constant game of strategy, pricing, and execution.</p>
-          <p className="l-how-footer-cta">Take a Seat. Defend it. Profit from it.</p>
+          <p className="l-how-footer-line">Take. Price. Fund. Earn. Defend. Repeat.</p>
+          <p className="l-how-footer-cta">The last holder standing wins the most.</p>
         </div>
       </div>
 

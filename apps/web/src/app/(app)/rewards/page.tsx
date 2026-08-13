@@ -50,7 +50,15 @@ export default function RewardsPage() {
 
         <div className="rw-header">
           <div className="rw-title">REWARDS</div>
-          <div className="rw-sub">HOOD Board · Realized seat earnings</div>
+          <div className="rw-sub">BOARD #001 / GENESIS · Realized seat earnings</div>
+        </div>
+
+        <div style={{ border: '1px solid var(--bd0)', borderRadius: 'var(--r-xs)', padding: '10px 16px', background: 'var(--bg2)', marginBottom: 24, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--status-warn)', textTransform: 'uppercase' }}>TESTNET</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)', textTransform: 'uppercase' }}>·</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Simulated Productive Revenue</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)', textTransform: 'uppercase' }}>·</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Robinhood Chain Testnet 46630</span>
         </div>
 
         {/* Board-level stats */}
