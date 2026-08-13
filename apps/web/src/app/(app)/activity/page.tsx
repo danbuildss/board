@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fmtTimestamp, fmtAddr, padSeat, eventLabel, fmtUSDG } from '@/lib/format'
+import { fmtTimestamp, padSeat, eventLabel, fmtUSDG } from '@/lib/format'
 
 type ActivityEvent = {
   event_type: string
@@ -19,10 +19,19 @@ const FILTERS = ['ALL', 'ACQUIRED', 'TAKEOVER', 'REPRICED', 'TOPPED UP', 'FORECL
 
 const EV_CLASS: Record<string, string> = {
   'ACQUIRED':   'ev-acquired',
-  'TAKEOVER':   'ev-taken',
+  'TAKEOVER':   'ev-takeover',
   'REPRICED':   'ev-repriced',
   'TOPPED UP':  'ev-toppedup',
   'FORECLOSED': 'ev-foreclosed',
+}
+
+function fmtAmt(ev: ActivityEvent): string {
+  if (ev.event_type === 'SeatPriceChanged' && ev.previous_price && ev.new_price) {
+    return `${fmtUSDG(ev.previous_price)} → ${fmtUSDG(ev.new_price)}`
+  }
+  if (ev.amount) return fmtUSDG(ev.amount)
+  if (ev.new_price) return fmtUSDG(ev.new_price)
+  return '—'
 }
 
 export default function ActivityPage() {
@@ -30,7 +39,8 @@ export default function ActivityPage() {
 
   const { data, isLoading } = useQuery<{ activity: ActivityEvent[] }>({
     queryKey: ['activity'],
-    queryFn: () => fetch('/api/activity?limit=100').then(r => r.json()),
+    queryFn: () => fetch('/api/activity?limit=200').then(r => r.json()),
+    refetchInterval: 15_000,
   })
 
   const all = data?.activity ?? []
@@ -58,30 +68,21 @@ export default function ActivityPage() {
         ) : events.length === 0 ? (
           <div className="empty-state">No events yet</div>
         ) : (
-          <div className="act-table">
-            <div className="act-head">
-              <span>EVENT</span>
+          <div className="act-tape">
+            <div className="act-tape-hdr">
+              <span>TIME</span>
               <span>SEAT</span>
-              <span>ACTOR</span>
+              <span>EVENT</span>
               <span>AMOUNT</span>
-              <span style={{ textAlign: 'right' }}>TIME</span>
             </div>
             {events.map((ev, i) => {
               const label = eventLabel(ev.event_type)
-              const amt = ev.amount
-                ? fmtUSDG(ev.amount)
-                : ev.new_price
-                ? fmtUSDG(ev.new_price)
-                : '—'
               return (
-                <div key={i} className="act-row">
-                  <span>
-                    <span className={`ev-pill ${EV_CLASS[label] ?? ''}`}>{label}</span>
-                  </span>
-                  <span className="act-seat">{padSeat(ev.seat_id)}</span>
-                  <span className="act-actor">{ev.actor ? fmtAddr(ev.actor) : '—'}</span>
-                  <span className="act-amt">{amt}</span>
-                  <span className="act-time">{fmtTimestamp(ev.occurred_at)}</span>
+                <div key={i} className="act-tape-row">
+                  <span className="att-time">{fmtTimestamp(ev.occurred_at)}</span>
+                  <span className="att-seat">{padSeat(ev.seat_id)}</span>
+                  <span className={`att-event ${EV_CLASS[label] ?? ''}`}>{label}</span>
+                  <span className="att-amt">{fmtAmt(ev)}</span>
                 </div>
               )
             })}

@@ -222,6 +222,11 @@ input { font-family: inherit; font-size: inherit; }
   font-size: 7px; font-weight: 700; letter-spacing: .06em;
   color: var(--green); font-family: var(--font-mono);
 }
+.stile-carry {
+  font-family: var(--font-mono); font-size: 7px; margin-top: 1px; line-height: 1.1; letter-spacing: -.02em;
+}
+.stile-carry.pos { color: #3a6a00; }
+.stile-carry.neg { color: #7a2000; }
 
 /* ── Seat drawer ────────────────────────────────────────── */
 .drawer {
@@ -1045,3 +1050,27 @@ input { font-family: inherit; font-size: inherit; }
 .l-footer3-social { display: flex; justify-content: flex-end; gap: 18px; }
 .l-footer3-social a { color: var(--t4); font-size: 16px; transition: color .12s; }
 .l-footer3-social a:hover { color: var(--t1); }
+
+/* ── Activity tape (shared: landing + activity page) ──── */
+.act-tape { display: flex; flex-direction: column; }
+.act-tape-hdr {
+  display: grid; grid-template-columns: 78px 52px 110px 1fr;
+  padding: 6px 16px; font-size: 10px; letter-spacing: .08em;
+  color: var(--t4); text-transform: uppercase; font-family: var(--font-mono);
+  border-bottom: 1px solid var(--bd0);
+}
+.act-tape-row {
+  display: grid; grid-template-columns: 78px 52px 110px 1fr;
+  padding: 8px 16px; font-family: var(--font-mono); font-size: 12px;
+  border-bottom: 1px solid var(--bd0); align-items: center;
+}
+.act-tape-row:hover { background: var(--bg2); }
+.att-time  { color: var(--t4); font-size: 11px; }
+.att-seat  { color: var(--t1); font-weight: 600; }
+.att-event { }
+.att-event.ev-takeover  { color: var(--green); }
+.att-event.ev-acquired  { color: var(--t2); }
+.att-event.ev-repriced  { color: var(--status-info); }
+.att-event.ev-toppedup  { color: var(--status-warn); }
+.att-event.ev-foreclosed { color: var(--red); }
+.att-amt { color: var(--t3); }
