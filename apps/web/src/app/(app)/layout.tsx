@@ -64,11 +64,11 @@ function Tape() {
 
 const NAV = [
   { href: '/hood',        label: 'BOARD' },
-  { href: '/genesis',     label: 'GENESIS' },
+  { href: '/boards',      label: 'BOARDS' },
   { href: '/activity',    label: 'ACTIVITY' },
   { href: '/rewards',     label: 'REWARDS' },
   { href: '/leaderboard', label: 'LEADERBOARD' },
-  { href: '/profile',     label: 'PROFILE' },
+  { href: '/about',       label: 'ABOUT' },
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -86,12 +86,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="shell-nav">
           {NAV.map(n => {
-            const href = n.href === '/profile'
-              ? (address ? `/profile/${address}` : '/profile')
-              : n.href
-            const active = n.href === '/profile'
-              ? pathname.startsWith('/profile')
-              : pathname.startsWith(n.href)
+            const href = n.href
+            const active = pathname.startsWith(n.href)
             return (
               <Link
                 key={n.href}
