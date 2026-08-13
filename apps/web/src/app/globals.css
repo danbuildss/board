@@ -1088,3 +1088,44 @@ input { font-family: inherit; font-size: inherit; }
   font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent);
 }
 .pf-former-row { opacity: 0.65; }
+
+/* ── P12: Seat notifications strip ───────────────────── */
+.notif-strip {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 12px; border-bottom: 1px solid var(--bd0);
+}
+.notif-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: var(--r-xs); border: 1px solid;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .04em;
+}
+.notif-item.ni-grace        { background: #1a0800; border-color: var(--status-grace); color: var(--status-grace); }
+.notif-item.ni-foreclosable { background: #1a0000; border-color: var(--red); color: var(--red); }
+.notif-item.ni-low          { background: #141000; border-color: var(--status-warn); color: var(--status-warn); }
+.ni-icon { font-size: 12px; }
+
+/* ── P12: Takeover rewards preview ───────────────────── */
+.takeover-preview {
+  border: 1px solid var(--bd0); border-radius: var(--r-xs);
+  padding: 12px 14px; background: var(--bg2); margin-top: 8px;
+}
+.tp-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--t4); font-family: var(--font-mono); margin-bottom: 8px;
+}
+.tp-rows { display: flex; flex-direction: column; gap: 5px; }
+.tp-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 11px; color: var(--t2);
+}
+.tp-row.tp-net {
+  border-top: 1px solid var(--bd0); margin-top: 4px; padding-top: 6px;
+  font-weight: 700;
+}
+.tp-v       { font-weight: 600; }
+.tp-v.g     { color: var(--green); }
+.tp-v.r     { color: var(--red); }
+.tp-v.dim   { color: var(--t3); }
+
+/* ── P12: Success "SEAT IS YOURS" ────────────────────── */
+.sc-yours { color: var(--accent) !important; font-size: 20px !important; }

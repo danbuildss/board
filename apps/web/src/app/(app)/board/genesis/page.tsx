@@ -44,6 +44,39 @@ type TxStep = 'form' | 'approving' | 'confirming' | 'done' | 'error'
 
 const VACANT_PRICE_RAW = 10_000_000n
 
+function SeatNotifications({ seats, me }: { seats: Seat[]; me: string | undefined }) {
+  if (!me) return null
+  const warnings: { seatId: number; kind: 'grace' | 'low' | 'foreclosable' }[] = []
+  for (const s of seats) {
+    if (s.owner?.toLowerCase() !== me) continue
+    if (s.status === 'FORECLOSABLE') {
+      warnings.push({ seatId: s.seatId, kind: 'foreclosable' })
+    } else if (s.status === 'GRACE') {
+      warnings.push({ seatId: s.seatId, kind: 'grace' })
+    } else if (s.status === 'ACTIVE' && s.price && s.effectiveBalance) {
+      const weeks = parseFloat(weeksRemaining(BigInt(s.effectiveBalance), BigInt(s.price)))
+      if (weeks < 2) warnings.push({ seatId: s.seatId, kind: 'low' })
+    }
+  }
+  if (!warnings.length) return null
+  return (
+    <div className="notif-strip">
+      {warnings.map(w => (
+        <div key={w.seatId} className={`notif-item ni-${w.kind}`}>
+          <span className="ni-icon">{w.kind === 'foreclosable' ? '✕' : '!'}</span>
+          <span className="ni-text">
+            {w.kind === 'grace'
+              ? `${padSeat(w.seatId)} IN GRACE — top up to stay active`
+              : w.kind === 'foreclosable'
+              ? `${padSeat(w.seatId)} FORECLOSABLE — act now`
+              : `${padSeat(w.seatId)} LOW RESERVE — less than 2 weeks remaining`}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ConcentricArt({ seatId }: { seatId: number }) {
   const layers = [
     { size: 56, color: '#1a2a00' },
@@ -379,6 +412,8 @@ export default function HoodPage() {
             )}
           </div>
 
+          <SeatNotifications seats={seats} me={address?.toLowerCase()} />
+
           <div className="seat-grid">
             {gridSeats.map(seat => {
               const mine = isMine(seat)
@@ -662,6 +697,7 @@ export default function HoodPage() {
           onTopupAmt={setTopupAmt}
           onClose={closeModal}
           onConfirm={handleConfirm}
+          rewards7d={perSeatWeekly7d}
           connected={!!address}
         />
       )}
@@ -685,13 +721,14 @@ type ActionModalProps = {
   onTopupAmt: (v: string) => void
   onClose: () => void
   onConfirm: () => void
+  rewards7d: bigint
   connected: boolean
 }
 
 function ActionModal({
   modal, seat, step, txHash, error,
   newPrice, onNewPrice, prepaid, onPrepaid, topupAmt, onTopupAmt,
-  onClose, onConfirm, connected,
+  onClose, onConfirm, rewards7d, connected,
 }: ActionModalProps) {
   const busy = step === 'approving' || step === 'confirming'
   const needsApprove = modal === 'take' || modal === 'topup' || modal === 'takeover'
@@ -860,6 +897,31 @@ function ActionModal({
               </div>
             )
           })()}
+          {(() => {
+            const wkCost = weeklyFee(priceRaw)
+            const netCarry = rewards7d - wkCost
+            return (
+              <div className="takeover-preview">
+                <div className="tp-label">EST. WEEKLY RETURNS (BASED ON 7D TRAILING)</div>
+                <div className="tp-rows">
+                  <div className="tp-row">
+                    <span>7D reward / seat</span>
+                    <span className="tp-v g">{fmtUSDG(rewards7d)}</span>
+                  </div>
+                  <div className="tp-row">
+                    <span>Holding cost</span>
+                    <span className="tp-v dim">−{fmtUSDG(wkCost)}</span>
+                  </div>
+                  <div className="tp-row tp-net">
+                    <span>Net carry</span>
+                    <span className={`tp-v ${netCarry >= 0n ? 'g' : 'r'}`}>
+                      {netCarry >= 0n ? '+' : '−'}{fmtUSDG(netCarry >= 0n ? netCarry : -netCarry)}/wk
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
         </>
       )
     }
@@ -880,23 +942,26 @@ function ActionModal({
   }
 
   function renderSuccess() {
+    const isOwnership = modal === 'take' || modal === 'takeover'
     const actionLabel =
-      modal === 'take' ? 'SEAT ACQUIRED' :
-      modal === 'takeover' ? 'SEAT TAKEN OVER' :
       modal === 'reprice' ? 'REPRICED' :
       modal === 'topup' ? 'TOPPED UP' : 'FORECLOSED'
     return (
       <div className="share-card">
         <div className="sc-label">BOARD #001 / GENESIS</div>
         <div className="sc-seat">{padSeat(seat.seatId)}</div>
-        <div className="sc-title">{actionLabel}</div>
+        {isOwnership ? (
+          <div className="sc-title sc-yours">SEAT IS YOURS</div>
+        ) : (
+          <div className="sc-title">{actionLabel}</div>
+        )}
         {txHash && (
           <div className="sc-row">
             <span>Tx</span>
             <span className="sc-v">{fmtAddr(txHash)}</span>
           </div>
         )}
-        {(modal === 'take' || modal === 'takeover') && (
+        {isOwnership && (
           <div className="sc-row" style={{ marginTop: 8 }}>
             <span>New price</span>
             <span className="sc-v">{fmtUSDG(parseUSDG(parseFloat(newPrice) || 0))}</span>
