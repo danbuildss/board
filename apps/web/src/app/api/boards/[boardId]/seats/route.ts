@@ -1,16 +1,22 @@
 export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt } from '@/lib/status';
 
-export async function GET() {
-  const res = await pool.query(`
-    SELECT seat_id, owner, price, prepaid_balance, last_settled_at,
-           status, estimated_depletion_at, grace_ends_at, updated_block
-    FROM seats
-    WHERE board_id = 'hood'
-    ORDER BY seat_id ASC
-  `);
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ boardId: string }> }
+) {
+  const { boardId } = await params;
+
+  const res = await pool.query(
+    `SELECT seat_id, owner, price, prepaid_balance, last_settled_at,
+            status, estimated_depletion_at, grace_ends_at, updated_block
+     FROM seats
+     WHERE board_id = $1
+     ORDER BY seat_id ASC`,
+    [boardId]
+  );
 
   const seats = res.rows.map(row => {
     const status = deriveStatus(row);

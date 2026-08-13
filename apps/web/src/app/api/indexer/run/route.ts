@@ -25,7 +25,7 @@ const client = createPublicClient({ chain, transport: http(chain.rpcUrls.default
 const BOARD_ADDRESS = (process.env.NEXT_PUBLIC_BOARD_ADDRESS ?? '0x0a3932a24dCC9Bbd7BFC448Da99265EC58F806DB') as `0x${string}`;
 const DEPLOYMENT_BLOCK = BigInt(process.env.DEPLOYMENT_BLOCK ?? '98751649');
 const BATCH_SIZE = 200n;
-const BOARD_ID = 'hood';
+const BOARD_ID = process.env.BOARD_ID ?? 'hood';
 
 const ABI = [
   { type: 'event', name: 'SeatAcquired', inputs: [

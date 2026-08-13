@@ -40,13 +40,14 @@ export async function resetForRebuild(): Promise<void> {
 export async function ensureBoard(): Promise<void> {
   await pool.query(
     `INSERT INTO boards (id, name, chain_id, contract_address, seat_count, deployment_block, settlement_asset)
-     VALUES ($1, 'HOOD Board', 46630, $2, 100, $3, '0x7E955252E15c84f5768B83c41a71F9eba181802F')
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      ON CONFLICT (id) DO NOTHING`,
-    [config.boardId, config.boardAddress, config.deploymentBlock.toString()]
+    [config.boardId, config.boardName, config.chainId, config.boardAddress,
+     config.seatCount, config.deploymentBlock.toString(), config.settlementAsset]
   );
 
   // Pre-populate all 100 seats as VACANT if not already present
-  const inserts = Array.from({ length: 100 }, (_, i) => i + 1)
+  const inserts = Array.from({ length: config.seatCount }, (_, i) => i + 1)
     .map((_, i) => `($1, ${i + 1}, 'VACANT')`)
     .join(', ');
   await pool.query(

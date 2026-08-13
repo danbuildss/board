@@ -5,12 +5,12 @@ import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ seatId: string }> }
+  { params }: { params: Promise<{ boardId: string; seatId: string }> }
 ) {
-  const { seatId: seatIdStr } = await params;
+  const { boardId, seatId: seatIdStr } = await params;
   const seatId = parseInt(seatIdStr, 10);
 
-  if (isNaN(seatId) || seatId < 1 || seatId > 100) {
+  if (isNaN(seatId) || seatId < 1) {
     return NextResponse.json({ error: 'Invalid seat ID' }, { status: 400 });
   }
 
@@ -18,17 +18,17 @@ export async function GET(
     pool.query(
       `SELECT seat_id, owner, price, prepaid_balance, last_settled_at,
               status, estimated_depletion_at, grace_ends_at, updated_block
-       FROM seats WHERE board_id = 'hood' AND seat_id = $1`,
-      [seatId]
+       FROM seats WHERE board_id = $1 AND seat_id = $2`,
+      [boardId, seatId]
     ),
     pool.query(
       `SELECT event_type, tx_hash, block_number, block_timestamp,
               actor, previous_owner, new_owner, amount,
               previous_price, new_price, metadata, occurred_at
        FROM seat_events
-       WHERE board_id = 'hood' AND seat_id = $1
+       WHERE board_id = $1 AND seat_id = $2
        ORDER BY block_number ASC, log_index ASC`,
-      [seatId]
+      [boardId, seatId]
     ),
   ]);
 
