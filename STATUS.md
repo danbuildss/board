@@ -13,11 +13,17 @@ P0  Base Seat engine (Board.sol)                ✅ COMPLETE  73/73 tests
 P1  Reward accounting contracts                 ✅ COMPLETE  54 new tests (30 + 24)
     Board_v2/BoardCore · RewardAccounting
     BoardVault · MockStrategyAdapter
-P2  BoardRegistry contract                      🔲 TODO
-P3  Reward smoothing in BoardVault              🔲 TODO
-P4  Parameterize HOOD hardcoding                🔲 TODO
-P5  Reward indexer + DB tables                  🔲 TODO
-P6  Reward API endpoints                        🔲 TODO
+P2  BoardRegistry contract                      ✅ COMPLETE  24 tests  (2026-08-13)
+P3  Reward smoothing in BoardVault              ✅ COMPLETE  23 tests  (2026-08-13)
+P4  Parameterize HOOD hardcoding                ✅ COMPLETE  (2026-08-13)
+    indexer config · API routes → [boardId] · env-var driven
+P5  Reward indexer + DB tables                  ✅ COMPLETE  (2026-08-13)
+    reward_deposits · seat_reward_state · reward_claims
+    RewardDeposited · EarningsBanked · RewardClaimed handlers
+P6  Reward API endpoints                        ✅ COMPLETE  (2026-08-13)
+    /api/boards/[boardId]/rewards
+    /api/boards/[boardId]/seats/[seatId]/rewards
+    /api/profiles/[wallet]/rewards
 P7  Full lifecycle proof (testnet, incl.        🟡 7/9 base scenarios done
     rewards E2E)                                    steps 8–9 + rewards need local machine
 P8  Functional frontend updates                 🔲 TODO  (base frontend ✅ merged PR #4)
@@ -51,6 +57,13 @@ P10 User testing (5+ real users, full loop)     🔲 TODO
   - `MockRewardToken.sol` — mintable ERC-20 for testing
   - `RewardAccounting.t.sol` — 30 tests (unit / fuzz / invariant)
   - `Board_v2.t.sol` — 24 integration tests (all lifecycle paths, vault flow, fuzz)
+- **BoardRegistry.sol + BoardVault.sol** (2026-08-13):
+  - `BoardRegistry.sol` — onchain board config store; PENDING/ACTIVE/PAUSED/DEPRECATED status; 24 tests
+  - `BoardVault.sol` — linear reward smoothing over configurable `streamDuration`; roll-over on new harvest; 23 tests
+  - Grand total: **174 / 174** ✅
+- **P4 parameterization** (2026-08-13): indexer config env-var driven; all API routes converted to `/api/boards/[boardId]/` and `/api/boardrooms/[boardId]/`; activity/leaderboard/profiles use `BOARD_ID` env var
+- **P5 reward indexer** (2026-08-13): `reward_deposits`, `seat_reward_state`, `reward_claims` tables; `RewardDeposited`, `EarningsBanked`, `RewardClaimed` event handlers; dual-contract log fetching (board + reward accounting)
+- **P6 reward API** (2026-08-13): `/api/boards/[boardId]/rewards`, `/api/boards/[boardId]/seats/[seatId]/rewards`, `/api/profiles/[wallet]/rewards`
 
 ---
 
@@ -88,19 +101,29 @@ Board_v2.sol (integration):
   Fuzz:            1 / 1   ✅  (1000 runs)
   Total:          24 / 24  ✅
 
-Grand total:     127 / 127  ✅
+BoardRegistry.sol:
+  Registration:    8 / 8   ✅
+  Status:          4 / 4   ✅
+  Strategy:        4 / 4   ✅
+  Views:           4 / 4   ✅
+  Fuzz:            4 / 4   ✅  (1000 runs each)
+  Total:          24 / 24  ✅
+
+BoardVault.sol:
+  NoSmoothing:     4 / 4   ✅
+  Smoothing:      11 / 11  ✅
+  Constructor:     3 / 3   ✅
+  Fuzz:            3 / 3   ✅  (1000 runs each)
+  Total:          23 / 23  ✅
+
+Grand total:     174 / 174  ✅
 ```
 
 ---
 
 ## Next (in order)
 
-1. **P2 — BoardRegistry.sol**: store board config onchain (boardId, name, market symbol, seat count, settlement asset, reward asset, strategy adapter, vacant price, holding rate, grace period, status)
-2. **P3 — Reward smoothing**: BoardVault streams realized revenue over a configurable interval rather than depositing in one block — reduces MEV and reward sniping
-3. **P4 — Parameterize HOOD hardcoding**: replace hardcoded `boardId` in indexer config, API routes, and frontend with `BoardRegistry` lookup
-4. **P5 — Indexer + DB**: 3 new tables (`reward_deposits`, `seat_reward_state`, `reward_claims`), 3 new event handlers
-5. **P6 — API endpoints**: `/api/boards/:boardId/rewards`, `/api/boards/:boardId/seats/:seatId/rewards`, `/api/profiles/:wallet/rewards`
-6. **P7 — Testnet lifecycle proof**: deploy Board_v2 suite, run steps 8–9 (foreclose + retake), run reward E2E (deposit → accrue → bank → claim) — requires local machine
-7. **P8 — Frontend updates**: Net Carry display, 4 core numbers per seat, Rewards page, updated nav (BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE), landing page with live 10×10 preview
-8. **P9 — Simulator regimes**: MockStrategyAdapter configurable regimes (DEAD / QUIET / NORMAL / HIGH VOLUME / EVENT SPIKE / CRASH)
-9. **P10 — User testing**: 5+ real users complete full loop including reward claims
+1. **P7 — Testnet lifecycle proof**: deploy Board_v2 suite, run steps 8–9 (foreclose + retake), run reward E2E (deposit → accrue → bank → claim) — **requires local machine** (egress policy blocks testnet RPC from remote)
+2. **P8 — Frontend updates**: Net Carry display, 4 core numbers per seat (ASK / REALIZED REWARDS / HOLDING COST / NET CARRY), Rewards page, updated nav (BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE), landing page with live 10×10 preview
+3. **P9 — Simulator regimes**: MockStrategyAdapter configurable regimes (DEAD / QUIET / NORMAL / HIGH VOLUME / EVENT SPIKE / CRASH)
+4. **P10 — User testing**: 5+ real users complete full loop including reward claims
