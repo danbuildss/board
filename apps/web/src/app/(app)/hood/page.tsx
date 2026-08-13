@@ -93,6 +93,12 @@ export default function HoodPage() {
     enabled: selectedId !== null,
   })
 
+  const { data: rewardsData } = useQuery<{ cumulativeBanked: string }>({
+    queryKey: ['seat-rewards', selectedId],
+    queryFn: () => fetch(`/api/boards/hood/seats/${selectedId}/rewards`).then(r => r.json()),
+    enabled: selectedId !== null,
+  })
+
   const [modal, setModal] = useState<ModalKind | null>(null)
   const [txStep, setTxStep] = useState<TxStep>('form')
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -154,6 +160,7 @@ export default function HoodPage() {
   function invalidate(seatId: number) {
     qc.invalidateQueries({ queryKey: ['seats'] })
     qc.invalidateQueries({ queryKey: ['seat-detail', seatId] })
+    qc.invalidateQueries({ queryKey: ['seat-rewards', seatId] })
     qc.invalidateQueries({ queryKey: ['board-stats'] })
     qc.invalidateQueries({ queryKey: ['tape'] })
   }
@@ -369,6 +376,38 @@ export default function HoodPage() {
             <div className="drawer-body">
               {selectedSeat.status !== 'VACANT' && (
                 <>
+                  {/* 4 core numbers */}
+                  {selectedSeat.price && (() => {
+                    const ask = BigInt(selectedSeat.price)
+                    const realizedRewards = BigInt(rewardsData?.cumulativeBanked ?? '0')
+                    const holdingCostWk = BigInt(selectedSeat.weeklyHoldingCost)
+                    const netCarry = realizedRewards - holdingCostWk
+                    const netPositive = netCarry >= 0n
+                    return (
+                      <div className="core-numbers">
+                        <div className="cn-cell">
+                          <div className="cn-label">ASK</div>
+                          <div className="cn-val">{fmtUSDG(ask)}</div>
+                        </div>
+                        <div className="cn-cell">
+                          <div className="cn-label">REALIZED REWARDS</div>
+                          <div className="cn-val g">{fmtUSDG(realizedRewards)}</div>
+                        </div>
+                        <div className="cn-cell">
+                          <div className="cn-label">HOLDING COST</div>
+                          <div className="cn-val dim">{fmtUSDG(holdingCostWk)}<span className="cn-per">/wk</span></div>
+                        </div>
+                        <div className="cn-cell">
+                          <div className="cn-label">NET CARRY</div>
+                          <div className={`cn-val ${netPositive ? 'g' : 'r'}`}>
+                            {netPositive ? '+' : '-'}{fmtUSDG(netPositive ? netCarry : -netCarry)}
+                            <span className="cn-per">/wk</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   <div className="info-block">
                     {selectedSeat.owner && (
                       <div className="irow">
