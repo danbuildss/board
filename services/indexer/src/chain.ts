@@ -2,7 +2,7 @@ import { createPublicClient, http, defineChain } from 'viem';
 import { config } from './config.js';
 
 export const robinhoodTestnet = defineChain({
-  id: 46630,
+  id: config.chainId,
   name: 'Robinhood Chain Testnet',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {

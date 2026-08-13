@@ -1,3 +1,32 @@
+export const REWARD_ACCOUNTING_ABI = [
+  {
+    type: 'event',
+    name: 'RewardDeposited',
+    inputs: [
+      { name: 'amount',          type: 'uint256', indexed: false },
+      { name: 'newGlobalIndex',  type: 'uint256', indexed: false },
+      { name: 'activeSeatCount', type: 'uint256', indexed: false },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'EarningsBanked',
+    inputs: [
+      { name: 'seatId', type: 'uint256', indexed: true  },
+      { name: 'owner',  type: 'address', indexed: true  },
+      { name: 'amount', type: 'uint256', indexed: false },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'RewardClaimed',
+    inputs: [
+      { name: 'owner',  type: 'address', indexed: true  },
+      { name: 'amount', type: 'uint256', indexed: false },
+    ],
+  },
+] as const;
+
 export const BOARD_ABI = [
   // ─── Events ───────────────────────────────────────────────────────────────
   {

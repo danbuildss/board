@@ -13,27 +13,20 @@ BOARD turns programmable markets into living communities of scarce, contestable,
 
 ### What BOARD Is
 
-BOARD creates a social ownership layer around real programmable markets. Each supported market can have a Board.
-
-Examples:
-- HOOD Board
-- NVDA Board
-- GME Board
-- AAPL Board
-- META Board
-
-Each Board has a fixed number of scarce Seats.
+BOARD is a contestable ownership game built around productive onchain market positions. Each Board represents an underlying strategy or market position. Seats within a Board give owners a share of the value that position generates.
 
 **For the first experiment: HOOD Board — 100 Seats.**
 
+The HOOD Board is built around a productive onchain position (initially simulated on testnet; real revenue in production). ACTIVE Seat owners accrue a share of realized revenue. The mechanic forces honest pricing: overprice a Seat and holding costs eat into earnings; underprice and someone takes it.
+
 A user can:
 1. Take an available Seat
-2. Choose the price of their Seat
-3. Maintain it by paying a holding cost
-4. Be taken over by anyone willing to pay their listed price
-5. Take Seats from other users
-6. Build permanent Seat history
-7. Build profile reputation
+2. Set their Ask (self-assessed Seat price)
+3. Pay a holding cost proportional to their Ask
+4. Earn from the Board's underlying productive position (ACTIVE only)
+5. Be taken over by anyone willing to pay their Ask
+6. Take Seats from other users
+7. Build permanent Seat history
 8. Access the market's private Boardroom
 9. Participate in the social game around that market
 
@@ -304,19 +297,31 @@ Any remaining prepaid holding balance is refunded separately after accrued costs
 
 ---
 
+### Seat Earnings
+
+ACTIVE Seat owners earn from the Board's underlying productive position.
+
+Rules:
+- Only **ACTIVE** Seats accrue. GRACE does not. VACANT does not.
+- All Seats carry equal weight — no rarity multipliers.
+- Accrual stops immediately when a Seat is taken over. Previous owner banks what they earned.
+- New owner begins accruing from the moment of takeover.
+- GRACE pauses accrual. Top-up resumes it from the current reward index (the gap is not retroactively filled).
+- Foreclosure banks any remaining claimable for the former owner.
+
+The Board displays realized revenue (24h, 7d, 30d) — not projected or guaranteed APY.
+
+---
+
 ### Revenue Philosophy
 
-BOARD currently has two native revenue sources:
-- Holding costs
-- Takeover fees
+BOARD has two native revenue sources:
+- Holding costs (go to the protocol treasury)
+- Takeover fees (5% to protocol treasury)
 
-These are genuine protocol revenues.
+These are NOT redistributed to Seat holders. Holding cost is a game-theoretic mechanism — forcing honest pricing — not a fee to recycle.
 
-**V1 must NOT automatically redistribute these to Seat holders.**
-
-Holding cost has a specific game-theoretic purpose: forcing users to honestly price Seats. Do not distort that mechanism to manufacture yield.
-
-The long-term goal is for Seats to eventually gain productive value from **external economic activity** — not from new Seat buyers recycling funds back to existing Seat holders.
+Seat earnings come from **external productive activity** that the Board's underlying position generates. This distinction is critical: BOARD does not manufacture yield from new entrants. It routes genuine external revenue to current ACTIVE Seat holders.
 
 ---
 
@@ -624,29 +629,31 @@ BOARD creates a social ownership layer around the market.
 
 | Phase | Name | Goal |
 |---|---|---|
-| 0 | Backend Proof | Prove the ownership state machine on testnet |
-| 1 | Functional HOOD Board | 100 Seats, terminal UI, full lifecycle |
-| 1.5 | Robinhood Market Layer | Real HOOD price/state, market events |
-| 1.75 | Seat Art | Generative financial Seat art from history |
-| 2 | Programmable Seat Research | ERC-6551 exploration — answer "what should it do?" |
-| 3 | External Board Revenue | Identify ONE real external revenue source |
-| 4 | Productive Seats | Only after genuine external revenue exists |
-| 5 | More Official Boards | NVDA, GME, AAPL, META — only if HOOD works |
-| 6 | Creator Boards | Communities launch Boards around approved markets |
-| 7 | Token / Agents / Advanced | Only after actual network demand exists |
+| 0 | Backend Proof | Prove the ownership state machine on testnet ✅ |
+| 1 | Productive Simulator | MockStrategy + time-weighted reward accounting on testnet |
+| 2 | Functional Terminal | Full UI: board, seat, earnings, activity, boardroom |
+| 3 | E2E Proof | Full lifecycle + reward accounting verified on testnet |
+| 4 | Private Test | 5+ real users, full loop including claims |
+| 5 | Robinhood Market Layer | Real HOOD price/state, market events |
+| 6 | Seat Art | Generative financial Seat art from history |
+| 7 | Real External Revenue | One genuine external productive source |
+| 8 | More Boards | NVDA, GME — only if HOOD works |
 
 ---
 
-### V1 Forbidden Scope
+### Forbidden Scope (until explicitly instructed)
 
-Do NOT add without explicit instruction:
 ```
-$BOARD token · points · yield · staking · Morpho · Uniswap
-Stock Token custody · Stock Token trading · AI agents · creator Boards
-Multiple Boards · referrals · DAO · governance · rarity · NFT marketplace
-OpenSea integration · arbitrary ERC-721 transfers · complex achievements
-Mobile app · portfolio products · ERC-6551 (yet)
+$BOARD token · points · staking · Morpho · Uniswap · real LP management
+Real NVDA / HOOD rewards · Stock Token custody · Stock Token trading
+AI agents · creator Boards · multiple Boards · referrals · DAO · governance
+Rarity · NFT marketplace · OpenSea integration · arbitrary ERC-721 transfers
+Complex achievements · mobile app · portfolio products · ERC-6551
+Reward multipliers · estimated/guaranteed future APY displayed as fact
 ```
+
+The goal right now is NOT mainnet yield.
+The goal is: **prove that productive cashflow + self-assessed pricing + holding cost + forced takeover produces a compelling contestable ownership market.**
 
 ---
 

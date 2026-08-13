@@ -1,19 +1,25 @@
 export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
-export async function GET() {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ boardId: string }> }
+) {
+  const { boardId } = await params;
+
   const [boardRes, statsRes] = await Promise.all([
-    pool.query(`SELECT * FROM boards WHERE id = 'hood'`),
-    pool.query(`
-      SELECT
+    pool.query(`SELECT * FROM boards WHERE id = $1`, [boardId]),
+    pool.query(
+      `SELECT
         COUNT(*) FILTER (WHERE status = 'VACANT')       AS vacant,
         COUNT(*) FILTER (WHERE status = 'ACTIVE')       AS active,
         COUNT(*) FILTER (WHERE status = 'GRACE')        AS grace,
         COUNT(*) FILTER (WHERE status = 'FORECLOSABLE') AS foreclosable,
         COUNT(DISTINCT owner) FILTER (WHERE owner IS NOT NULL) AS unique_owners
-      FROM seats WHERE board_id = 'hood'
-    `),
+       FROM seats WHERE board_id = $1`,
+      [boardId]
+    ),
   ]);
 
   if (!boardRes.rows[0]) {

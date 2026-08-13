@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt } from '@/lib/status';
 
+const BOARD_ID = process.env.BOARD_ID ?? 'hood';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ wallet: string }> }
@@ -14,9 +16,9 @@ export async function GET(
     `SELECT seat_id, owner, price, prepaid_balance, last_settled_at,
             status, updated_block
      FROM seats
-     WHERE board_id = 'hood' AND LOWER(owner) = $1
+     WHERE board_id = $2 AND LOWER(owner) = $1
      ORDER BY seat_id ASC`,
-    [wallet]
+    [wallet, BOARD_ID]
   );
 
   const seats = res.rows.map(row => {

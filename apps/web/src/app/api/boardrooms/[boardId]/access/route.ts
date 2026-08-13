@@ -3,8 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { deriveStatus } from '@/lib/status';
 
-// GET /api/boardrooms/hood/access?wallet=0x...
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ boardId: string }> }
+) {
+  const { boardId } = await params;
   const wallet = req.nextUrl.searchParams.get('wallet')?.toLowerCase();
 
   if (!wallet) {
@@ -14,11 +17,10 @@ export async function GET(req: NextRequest) {
   const res = await pool.query(
     `SELECT seat_id, owner, price, prepaid_balance, last_settled_at
      FROM seats
-     WHERE board_id = 'hood' AND LOWER(owner) = $1`,
-    [wallet]
+     WHERE board_id = $1 AND LOWER(owner) = $2`,
+    [boardId, wallet]
   );
 
-  // Re-derive status in real time — DB status may be stale between events
   const eligibleSeat = res.rows.find(row => {
     const s = deriveStatus(row);
     return s === 'ACTIVE' || s === 'GRACE';

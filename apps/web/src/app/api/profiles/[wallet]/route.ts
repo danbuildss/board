@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 
+const BOARD_ID = process.env.BOARD_ID ?? 'hood';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ wallet: string }> }
@@ -13,8 +15,8 @@ export async function GET(
     pool.query(
       `SELECT seat_id, status, price, prepaid_balance, last_settled_at
        FROM seats
-       WHERE board_id = 'hood' AND LOWER(owner) = $1`,
-      [wallet]
+       WHERE board_id = $2 AND LOWER(owner) = $1`,
+      [wallet, BOARD_ID]
     ),
     pool.query(
       `SELECT
@@ -22,8 +24,8 @@ export async function GET(
          COUNT(*) FILTER (WHERE event_type = 'SeatTaken')     AS takeovers_initiated,
          COUNT(*) FILTER (WHERE event_type = 'SeatForeclosed' AND LOWER(previous_owner) = $1) AS seats_foreclosed
        FROM seat_events
-       WHERE board_id = 'hood' AND (LOWER(actor) = $1 OR LOWER(previous_owner) = $1)`,
-      [wallet]
+       WHERE board_id = $2 AND (LOWER(actor) = $1 OR LOWER(previous_owner) = $1)`,
+      [wallet, BOARD_ID]
     ),
   ]);
 

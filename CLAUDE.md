@@ -14,18 +14,19 @@ If implementation and documentation conflict: **STOP and report the discrepancy.
 
 ### Product
 
-BOARD is a social ownership game built around scarce, contestable Seats.
+BOARD is a contestable ownership game built around productive onchain market positions.
 
 First experiment: **HOOD Board — 100 Seats.**
 
 Every Seat:
 - Has a permanent number
 - Can be taken while vacant
-- Has a self-assessed price
+- Has a self-assessed Ask price
 - Is always available for takeover while occupied
-- Incurs holding costs
+- Incurs holding costs proportional to Ask
 - Uses a prepaid holding balance
-- Enters grace when balance is exhausted
+- Earns from the Board's underlying productive position (**ACTIVE only**)
+- Enters grace when balance is exhausted (reward accrual pauses)
 - Can be foreclosed after grace
 - Accumulates permanent ownership history
 

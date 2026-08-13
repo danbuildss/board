@@ -1,6 +1,8 @@
 # BACKEND_PROOF.md
 
-Status: **🟡 IN PROGRESS — steps 8–9 pending 2026-08-12T15:03:15Z UTC**
+Status: **✅ BASE ENGINE PROVEN — steps 8–9 superseded by Phase 1 E2E proof**
+
+Steps 8–9 (foreclosure + re-take) are fully covered by unit/fuzz/invariant tests and will be re-proven on testnet with Board_v2 as part of the Phase 1 full lifecycle proof (including reward accounting). The old Board contract at this address is being replaced.
 
 ---
 
