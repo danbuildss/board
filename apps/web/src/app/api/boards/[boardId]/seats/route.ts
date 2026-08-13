@@ -2,12 +2,13 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt } from '@/lib/status';
+import { resolveBoard } from '@/lib/board-resolver';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ boardId: string }> }
 ) {
-  const { boardId } = await params;
+  const boardId = resolveBoard((await params).boardId);
 
   const res = await pool.query(
     `SELECT seat_id, owner, price, prepaid_balance, last_settled_at,

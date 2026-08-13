@@ -33,6 +33,12 @@ type HistoryEvent = {
 
 type SeatDetail = Seat & { history: HistoryEvent[] }
 
+type BoardRewardDeposit = { amount: string; occurred_at: string }
+type BoardRewards = {
+  activeSeatCount: number
+  recentDeposits: BoardRewardDeposit[]
+}
+
 type ModalKind = 'take' | 'reprice' | 'topup' | 'takeover' | 'foreclose'
 type TxStep = 'form' | 'approving' | 'confirming' | 'done' | 'error'
 
@@ -92,13 +98,13 @@ export default function HoodPage() {
 
   const { data: seatsData } = useQuery<{ seats: Seat[] }>({
     queryKey: ['seats'],
-    queryFn: () => fetch('/api/boards/hood/seats').then(r => r.json()),
+    queryFn: () => fetch('/api/boards/genesis/seats').then(r => r.json()),
   })
   const seats = seatsData?.seats ?? []
 
   const { data: boardData } = useQuery<{ stats: Record<string, number> }>({
     queryKey: ['board-stats'],
-    queryFn: () => fetch('/api/boards/hood').then(r => r.json()),
+    queryFn: () => fetch('/api/boards/genesis').then(r => r.json()),
   })
   const stats = boardData?.stats
 
@@ -109,14 +115,20 @@ export default function HoodPage() {
 
   const { data: detailData } = useQuery<SeatDetail>({
     queryKey: ['seat-detail', selectedId],
-    queryFn: () => fetch(`/api/boards/hood/seats/${selectedId}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/boards/genesis/seats/${selectedId}`).then(r => r.json()),
     enabled: selectedId !== null,
   })
 
   const { data: rewardsData } = useQuery<{ cumulativeBanked: string }>({
     queryKey: ['seat-rewards', selectedId],
-    queryFn: () => fetch(`/api/boards/hood/seats/${selectedId}/rewards`).then(r => r.json()),
+    queryFn: () => fetch(`/api/boards/genesis/seats/${selectedId}/rewards`).then(r => r.json()),
     enabled: selectedId !== null,
+  })
+
+  const { data: boardRewards } = useQuery<BoardRewards>({
+    queryKey: ['board-rewards-summary'],
+    queryFn: () => fetch('/api/boards/genesis/rewards').then(r => r.json()),
+    refetchInterval: 60_000,
   })
 
   const [modal, setModal] = useState<ModalKind | null>(null)
@@ -324,6 +336,17 @@ export default function HoodPage() {
     else if (modal === 'foreclose') doForeclose()
   }
 
+  // Per-seat weekly reward estimate (equal distribution from last 7d deposits)
+  const perSeatWeekly7d = (() => {
+    if (!boardRewards) return 0n
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
+    const total7d = boardRewards.recentDeposits
+      .filter(d => new Date(d.occurred_at).getTime() > cutoff)
+      .reduce((s, d) => s + BigInt(d.amount), 0n)
+    const n = BigInt(Math.max(1, boardRewards.activeSeatCount))
+    return total7d / n
+  })()
+
   const gridSeats: Seat[] = Array.from({ length: 100 }, (_, i) => {
     const id = i + 1
     return seats.find(s => s.seatId === id) ?? {
@@ -373,6 +396,14 @@ export default function HoodPage() {
                 >
                   <span className="stile-num">{padSeat(seat.seatId)}</span>
                   {seat.price && <span className="stile-price">{fmtUSDG(seat.price)}</span>}
+                  {seat.status !== 'VACANT' && seat.weeklyHoldingCost && (() => {
+                    const carry = perSeatWeekly7d - BigInt(seat.weeklyHoldingCost)
+                    return (
+                      <span className={`stile-carry ${carry >= 0n ? 'pos' : 'neg'}`}>
+                        {carry >= 0n ? '+' : '-'}{fmtUSDG(carry >= 0n ? carry : -carry)}
+                      </span>
+                    )
+                  })()}
                   {mine && <span className="stile-mine-tag">YOU</span>}
                 </div>
               )
@@ -558,31 +589,49 @@ export default function HoodPage() {
           style={{ left: tooltipPos.x + 16, top: tooltipPos.y + 16 }}
         >
           <div className="tt-head">SEAT {padSeat(tooltipSeat.seatId)}</div>
-          {tooltipSeat.status !== 'VACANT' ? (
-            <>
-              <div className="tt-row">
-                <span className="tt-label">ASK</span>
-                <span className="tt-val">{fmtUSDG(tooltipSeat.price!)}</span>
-              </div>
-              <div className="tt-row">
-                <span className="tt-label">RUNWAY</span>
-                <span className="tt-val">
-                  {weeksRemaining(BigInt(tooltipSeat.effectiveBalance), BigInt(tooltipSeat.price ?? '0'))}w
-                </span>
-              </div>
-              <div className="tt-row">
-                <span className="tt-label">STATUS</span>
-                <span className="tt-val" style={{
-                  color: tooltipSeat.status === 'ACTIVE' ? 'var(--green)'
-                    : tooltipSeat.status === 'GRACE' ? 'var(--amber)' : 'var(--red)',
-                }}>
-                  {tooltipSeat.status === 'ACTIVE' ? 'SAFE'
-                    : tooltipSeat.status === 'GRACE' ? 'GRACE'
-                    : 'AT RISK'}
-                </span>
-              </div>
-            </>
-          ) : (
+          {tooltipSeat.status !== 'VACANT' ? (() => {
+            const holdingCost = BigInt(tooltipSeat.weeklyHoldingCost)
+            const carry = perSeatWeekly7d - holdingCost
+            return (
+              <>
+                <div className="tt-row">
+                  <span className="tt-label">ASK</span>
+                  <span className="tt-val">{fmtUSDG(tooltipSeat.price!)}</span>
+                </div>
+                <div className="tt-row">
+                  <span className="tt-label">7D REWARDS</span>
+                  <span className="tt-val g">{fmtUSDG(perSeatWeekly7d)}</span>
+                </div>
+                <div className="tt-row">
+                  <span className="tt-label">7D COST</span>
+                  <span className="tt-val dim">{fmtUSDG(holdingCost)}</span>
+                </div>
+                <div className="tt-row">
+                  <span className="tt-label">NET CARRY</span>
+                  <span className={`tt-val ${carry >= 0n ? 'g' : 'r'}`}>
+                    {carry >= 0n ? '+' : '-'}{fmtUSDG(carry >= 0n ? carry : -carry)}
+                  </span>
+                </div>
+                <div className="tt-row">
+                  <span className="tt-label">RUNWAY</span>
+                  <span className="tt-val">
+                    {weeksRemaining(BigInt(tooltipSeat.effectiveBalance), BigInt(tooltipSeat.price ?? '0'))}w
+                  </span>
+                </div>
+                <div className="tt-row">
+                  <span className="tt-label">STATUS</span>
+                  <span className="tt-val" style={{
+                    color: tooltipSeat.status === 'ACTIVE' ? 'var(--green)'
+                      : tooltipSeat.status === 'GRACE' ? 'var(--amber)' : 'var(--red)',
+                  }}>
+                    {tooltipSeat.status === 'ACTIVE' ? 'SAFE'
+                      : tooltipSeat.status === 'GRACE' ? 'GRACE'
+                      : 'AT RISK'}
+                  </span>
+                </div>
+              </>
+            )
+          })() : (
             <>
               <div className="tt-row">
                 <span className="tt-label">STATUS</span>

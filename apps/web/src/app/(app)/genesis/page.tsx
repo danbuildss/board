@@ -31,7 +31,7 @@ type ActivityEvent = {
 export default function GenesisPage() {
   const { data: boardData } = useQuery<BoardData>({
     queryKey: ['board-genesis'],
-    queryFn: () => fetch('/api/boards/hood').then(r => r.json()),
+    queryFn: () => fetch('/api/boards/genesis').then(r => r.json()),
   })
 
   const { data: activityData } = useQuery<{ activity: ActivityEvent[] }>({
@@ -49,7 +49,15 @@ export default function GenesisPage() {
 
         <div className="gn-header">
           <div className="gn-title">GENESIS</div>
-          <div className="gn-sub">HOOD Board · Onchain record</div>
+          <div className="gn-sub">BOARD #001 / GENESIS · Onchain record</div>
+        </div>
+
+        <div style={{ border: '1px solid var(--bd0)', borderRadius: 'var(--r-xs)', padding: '10px 16px', background: 'var(--bg2)', marginBottom: 24, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--status-warn)', textTransform: 'uppercase' }}>TESTNET</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)' }}>·</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Robinhood Chain Testnet · Chain 46630</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)' }}>·</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Simulated Productive Revenue</span>
         </div>
 
         {/* Board parameters */}

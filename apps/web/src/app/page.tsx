@@ -2,13 +2,18 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { fmtUSDG, padSeat, eventLabel } from '@/lib/format'
+import { fmtUSDG, padSeat, eventLabel, weeklyFee } from '@/lib/format'
 
-type Seat = { seatId: number; status: string; price?: string }
+type Seat = { seatId: number; status: string; price?: string; weeklyHoldingCost?: string }
+type BoardRewardsData = {
+  activeSeatCount: number
+  recentDeposits: { amount: string; occurred_at: string }[]
+}
 type ActivityEvent = {
   event_type: string
   seat_id: number
   new_price: string | null
+  previous_price: string | null
   amount: string | null
   occurred_at: string | null
   tx_hash: string | null
@@ -18,11 +23,6 @@ type BoardStats = {
   vacant: number
   grace: number
   foreclosable: number
-}
-
-function fmtAddr(addr: string | null | undefined): string {
-  if (!addr) return '—'
-  return addr.slice(0, 6) + '...' + addr.slice(-4)
 }
 
 function fmtTime(iso: string | null): string {
@@ -89,16 +89,6 @@ function ConcentricArt({ seatId }: { seatId: number }) {
   )
 }
 
-/* Activity icon helper */
-function actIcon(type: string) {
-  if (type === 'seat_taken' || type === 'seat_acquired') return { cls: 'taken', sym: '▲' }
-  if (type === 'seat_takeover') return { cls: 'taken', sym: '⇄' }
-  if (type === 'seat_repriced') return { cls: 'repriced', sym: '◈' }
-  if (type === 'seat_topped_up') return { cls: 'toppedUp', sym: '+' }
-  if (type === 'seat_foreclosed') return { cls: 'grace3', sym: '✕' }
-  return { cls: 'default', sym: '·' }
-}
-
 /* Board terminal with row/col labels */
 function BoardTerminal({ seats }: { seats: Seat[] }) {
   const [hovered, setHovered] = useState<number | null>(null)
@@ -113,7 +103,7 @@ function BoardTerminal({ seats }: { seats: Seat[] }) {
   return (
     <div className="board-terminal">
       <div className="bt-header">
-        <span className="bt-title">BOARD #001 · HOOD / USDG</span>
+        <span className="bt-title">BOARD #001 / GENESIS · USDG</span>
         <span className="bt-live">
           <span className="bt-live-dot" />
           LIVE
@@ -192,7 +182,7 @@ function BoardTerminal({ seats }: { seats: Seat[] }) {
       </div>
 
       <div style={{ padding: '8px 16px', borderTop: '1px solid var(--bd0)' }}>
-        <Link href="/hood" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--green)', letterSpacing: '.04em' }}>
+        <Link href="/board/genesis" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--green)', letterSpacing: '.04em' }}>
           VIEW BOARD →
         </Link>
       </div>
@@ -205,9 +195,10 @@ export default function LandingPage() {
   const [stats, setStats] = useState<BoardStats | null>(null)
   const [activity, setActivity] = useState<ActivityEvent[]>([])
   const [featuredSeat, setFeaturedSeat] = useState<Seat | null>(null)
+  const [boardRewards, setBoardRewards] = useState<BoardRewardsData | null>(null)
 
   useEffect(() => {
-    fetch('/api/boards/hood/seats')
+    fetch('/api/boards/genesis/seats')
       .then(r => r.json())
       .then((d: { seats: Seat[] }) => {
         const s = d.seats ?? []
@@ -220,25 +211,67 @@ export default function LandingPage() {
       })
       .catch(() => {})
 
-    fetch('/api/boards/hood')
+    fetch('/api/boards/genesis')
       .then(r => r.json())
       .then((d: { stats: BoardStats }) => setStats(d.stats ?? null))
       .catch(() => {})
 
-    fetch('/api/activity?limit=10')
+    fetch('/api/activity?limit=200')
       .then(r => r.json())
       .then((d: { activity: ActivityEvent[] }) => setActivity(d.activity ?? []))
+      .catch(() => {})
+
+    fetch('/api/boards/genesis/rewards')
+      .then(r => r.json())
+      .then((d: BoardRewardsData) => setBoardRewards(d))
       .catch(() => {})
   }, [])
 
   const activeCount = stats?.active ?? 0
   const vacantCount = stats?.vacant ?? 0
 
+  // 7D simulated revenue
+  const revenue7d = (() => {
+    if (!boardRewards) return 0n
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
+    return boardRewards.recentDeposits
+      .filter(d => new Date(d.occurred_at).getTime() > cutoff)
+      .reduce((s, d) => s + BigInt(d.amount), 0n)
+  })()
+
+  // Per-seat weekly reward estimate (equal distribution)
+  const perSeat7d = (() => {
+    const n = BigInt(Math.max(1, boardRewards?.activeSeatCount ?? 1))
+    return revenue7d / n
+  })()
+
+  // 24h takeovers
+  const takeovers24h = (() => {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000
+    return activity.filter(ev =>
+      ev.event_type === 'SeatTaken' &&
+      ev.occurred_at &&
+      new Date(ev.occurred_at).getTime() > cutoff
+    ).length
+  })()
+
   const medianAsk = (() => {
     const prices = seats.filter(s => s.status === 'active' && s.price).map(s => Number(BigInt(s.price!) / 1_000_000n))
     if (!prices.length) return null
     prices.sort((a, b) => a - b)
     return prices[Math.floor(prices.length / 2)]
+  })()
+
+  // Median net carry across active seats
+  const medianNetCarry = (() => {
+    const active = seats.filter(s => s.status === 'active' && s.weeklyHoldingCost)
+    if (!active.length) return null
+    const carries = active.map(s => {
+      const cost = BigInt(s.weeklyHoldingCost ?? '0')
+      return perSeat7d - cost
+    })
+    carries.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))
+    return carries[Math.floor(carries.length / 2)]
   })()
 
   return (
@@ -249,13 +282,13 @@ export default function LandingPage() {
         <Link href="/" className="l-logo">BOARD</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <span style={{ color: 'var(--green)', fontSize: 8, marginRight: 4 }}>●</span>
-          <Link href="/hood"        className="l-nav-link first">BOARD</Link>
+          <Link href="/board/genesis"        className="l-nav-link first">BOARD</Link>
           <Link href="/activity"    className="l-nav-link">ACTIVITY</Link>
           <Link href="/rewards"     className="l-nav-link">REWARDS</Link>
           <Link href="/leaderboard" className="l-nav-link">LEADERBOARD</Link>
           <Link href="/about"       className="l-nav-link">ABOUT</Link>
         </div>
-        <Link href="/hood" className="l-nav-enter">ENTER BOARD →</Link>
+        <Link href="/board/genesis" className="l-nav-enter">ENTER BOARD →</Link>
       </nav>
 
       {/* ── Hero ── */}
@@ -282,7 +315,7 @@ export default function LandingPage() {
           </p>
 
           <div className="hero-cta-row">
-            <Link href="/hood" className="cta-primary">ENTER BOARD →</Link>
+            <Link href="/board/genesis" className="cta-primary">ENTER BOARD →</Link>
             <a href="#how" className="cta-secondary">HOW IT WORKS ▷</a>
           </div>
 
@@ -313,26 +346,25 @@ export default function LandingPage() {
       {/* ── Metrics strip ── */}
       <div className="l-metrics">
         <div className="l-metric">
+          <div className="l-metric-label">7D SIM REVENUE <span style={{ color: 'var(--status-warn)', fontSize: 8 }}>SIMULATED</span></div>
+          <div className="l-metric-val g">{revenue7d > 0n ? fmtUSDG(String(revenue7d)) : '—'}</div>
+          <div className="l-metric-bottom">
+            <span className="l-metric-change">last 7 days · testnet</span>
+            {revenue7d > 0n && <SparkLine />}
+          </div>
+        </div>
+        <div className="l-metric">
           <div className="l-metric-label">ACTIVE SEATS</div>
           <div className="l-metric-val g">{activeCount} / 100</div>
           <div className="l-metric-bottom">
-            <span className="l-metric-change">{activeCount}% occupied</span>
-            <SparkLine />
+            <span className="l-metric-change">{vacantCount} vacant · $10 to take</span>
           </div>
         </div>
         <div className="l-metric">
-          <div className="l-metric-label">VACANT SEATS</div>
-          <div className="l-metric-val">{vacantCount}</div>
+          <div className="l-metric-label">24H TAKEOVERS</div>
+          <div className="l-metric-val">{takeovers24h}</div>
           <div className="l-metric-bottom">
-            <span className="l-metric-change">$10 to take</span>
-            <SparkLine color="var(--t3)" />
-          </div>
-        </div>
-        <div className="l-metric">
-          <div className="l-metric-label">HOLDING RATE</div>
-          <div className="l-metric-val">0.5%</div>
-          <div className="l-metric-bottom">
-            <span className="l-metric-change">per week on ask</span>
+            <span className="l-metric-change">last 24 hours</span>
           </div>
         </div>
         <div className="l-metric">
@@ -344,10 +376,14 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="l-metric">
-          <div className="l-metric-label">SELLER SHARE</div>
-          <div className="l-metric-val">95%</div>
+          <div className="l-metric-label">MEDIAN NET CARRY</div>
+          <div className={`l-metric-val${medianNetCarry !== null && medianNetCarry >= 0n ? ' g' : ' r'}`}>
+            {medianNetCarry !== null
+              ? `${medianNetCarry >= 0n ? '+' : '-'}${fmtUSDG(medianNetCarry >= 0n ? medianNetCarry : -medianNetCarry)}`
+              : '—'}
+          </div>
           <div className="l-metric-bottom">
-            <span className="l-metric-change up">on takeover</span>
+            <span className="l-metric-change">per seat · per week</span>
           </div>
         </div>
       </div>
@@ -360,33 +396,40 @@ export default function LandingPage() {
             <div className="l-how-step-num">01</div>
             <div className="l-how-step-icon">◻</div>
             <div className="l-how-step-title">TAKE A SEAT</div>
-            <p className="l-how-step-text">Choose a vacant seat or take one from another owner by paying their ask.</p>
+            <p className="l-how-step-text">Pay $10 to claim a vacant seat — or pay any owner&apos;s ask price to take theirs.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">02</div>
             <div className="l-how-step-icon">⬡</div>
             <div className="l-how-step-title">SET YOUR PRICE</div>
-            <p className="l-how-step-text">Set your ask price. Higher ask = stronger defense, higher cost.</p>
+            <p className="l-how-step-text">Name your ask. Higher ask = harder to take, but also higher weekly holding cost.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">03</div>
-            <div className="l-how-step-icon">◎</div>
-            <div className="l-how-step-title">EARN WHILE YOU HOLD</div>
-            <p className="l-how-step-text">Earn a share of the board&apos;s realized yield as long as you hold your seat.</p>
+            <div className="l-how-step-icon">▣</div>
+            <div className="l-how-step-title">FUND YOUR HOLD</div>
+            <p className="l-how-step-text">Prepay holding costs to stay active. Let it run dry and your seat enters grace.</p>
             <div className="l-how-arrow">→</div>
           </div>
           <div className="l-how-step">
             <div className="l-how-step-num">04</div>
+            <div className="l-how-step-icon">◎</div>
+            <div className="l-how-step-title">EARN WHILE YOU HOLD</div>
+            <p className="l-how-step-text">Active seats earn a pro-rata share of the board&apos;s productive revenue every cycle.</p>
+            <div className="l-how-arrow">→</div>
+          </div>
+          <div className="l-how-step">
+            <div className="l-how-step-num">05</div>
             <div className="l-how-step-icon">⊕</div>
-            <div className="l-how-step-title">ANYONE CAN TAKE IT</div>
-            <p className="l-how-step-text">Anyone can take your seat at your ask. Stay sharp or lose your seat.</p>
+            <div className="l-how-step-title">DEFEND YOUR SEAT</div>
+            <p className="l-how-step-text">Anyone can take your seat at any time. Reprice, top up, or let them have it.</p>
           </div>
         </div>
         <div className="l-how-footer">
-          <p className="l-how-footer-line">It&apos;s a constant game of strategy, pricing, and execution.</p>
-          <p className="l-how-footer-cta">Take a Seat. Defend it. Profit from it.</p>
+          <p className="l-how-footer-line">Take. Price. Fund. Earn. Defend. Repeat.</p>
+          <p className="l-how-footer-cta">The last holder standing wins the most.</p>
         </div>
       </div>
 
@@ -402,25 +445,26 @@ export default function LandingPage() {
           {activity.length === 0 ? (
             <div className="empty-state">No recent activity</div>
           ) : (
-            activity.slice(0, 5).map((ev, i) => {
-              const { cls, sym } = actIcon(ev.event_type)
-              const val = ev.amount ? fmtUSDG(ev.amount) : ev.new_price ? fmtUSDG(ev.new_price) : ''
-              return (
-                <Link key={i} href="/activity" className="l-act-row-link">
-                  <div className="l-act-inner">
-                    <div className={`l-act-icon2 ${cls}`}>{sym}</div>
-                    <div className="l-act-body2">
-                      <div className="l-act-title2">
-                        Seat <span className="seat-ref">{padSeat(ev.seat_id)}</span>{' '}
-                        {eventLabel(ev.event_type).toLowerCase()}{val ? ` for ${val}` : ''}
-                      </div>
-                      <div className="l-act-addr">{fmtTime(ev.occurred_at)}</div>
-                    </div>
-                    <div className="l-act-chevron">›</div>
+            <div className="act-tape">
+              {activity.slice(0, 8).map((ev, i) => {
+                const label = eventLabel(ev.event_type)
+                const EV_CLASS: Record<string, string> = {
+                  'ACQUIRED': 'ev-acquired', 'TAKEOVER': 'ev-takeover',
+                  'REPRICED': 'ev-repriced', 'TOPPED UP': 'ev-toppedup', 'FORECLOSED': 'ev-foreclosed',
+                }
+                const val = ev.event_type === 'SeatPriceChanged' && ev.previous_price && ev.new_price
+                  ? `${fmtUSDG(ev.previous_price)} → ${fmtUSDG(ev.new_price)}`
+                  : ev.amount ? fmtUSDG(ev.amount) : ev.new_price ? fmtUSDG(ev.new_price) : '—'
+                return (
+                  <div key={i} className="act-tape-row">
+                    <span className="att-time">{fmtTime(ev.occurred_at)}</span>
+                    <span className="att-seat">{padSeat(ev.seat_id)}</span>
+                    <span className={`att-event ${EV_CLASS[label] ?? ''}`}>{label}</span>
+                    <span className="att-amt">{val}</span>
                   </div>
-                </Link>
-              )
-            })
+                )
+              })}
+            </div>
           )}
         </div>
 
@@ -429,7 +473,7 @@ export default function LandingPage() {
           <div className="l-panel-label" style={{ padding: '0 28px', height: 40, display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--bd0)' }}>
             FEATURED SEAT
             {featuredSeat && (
-              <Link href="/hood" className="l-panel-link">VIEW SEAT →</Link>
+              <Link href="/board/genesis" className="l-panel-link">VIEW SEAT →</Link>
             )}
           </div>
           {featuredSeat ? (
@@ -439,31 +483,43 @@ export default function LandingPage() {
                 <ConcentricArt seatId={featuredSeat.seatId} />
               </div>
               {/* Data */}
-              <div className="l-feat-data-col">
-                <div className="l-feat-name-row">
-                  <span className="l-feat-name">SEAT {padSeat(featuredSeat.seatId)}</span>
-                  <span className="l-feat-sbadge safe">SAFE</span>
-                </div>
-                <div>
-                  <div className="l-feat-flabel">CURRENT ASK</div>
-                  <div className="l-feat-fval">{featuredSeat.price ? fmtUSDG(featuredSeat.price) : '—'} USDG</div>
-                </div>
-                <div>
-                  <div className="l-feat-flabel">STATUS</div>
-                  <div className="l-feat-fval" style={{ fontSize: 16, color: 'var(--t2)' }}>ACTIVE</div>
-                </div>
-                <div>
-                  <div className="l-feat-flabel">WEEKLY COST</div>
-                  <div className="l-feat-fval" style={{ fontSize: 14, color: 'var(--t2)' }}>
-                    {featuredSeat.price
-                      ? fmtUSDG(String(BigInt(featuredSeat.price) * 50n / 10000n))
-                      : '—'}
+              {(() => {
+                const ask = BigInt(featuredSeat.price ?? '0')
+                const holdingCost = weeklyFee(ask)
+                const featCarry = perSeat7d - holdingCost
+                return (
+                  <div className="l-feat-data-col">
+                    <div className="l-feat-name-row">
+                      <span className="l-feat-name">SEAT {padSeat(featuredSeat.seatId)}</span>
+                      <span className="l-feat-sbadge safe">ACTIVE</span>
+                    </div>
+                    <div>
+                      <div className="l-feat-flabel">ASK</div>
+                      <div className="l-feat-fval">{fmtUSDG(ask)}</div>
+                    </div>
+                    <div>
+                      <div className="l-feat-flabel">7D SIM REWARDS <span style={{ fontSize: 8, color: 'var(--status-warn)' }}>SIMULATED</span></div>
+                      <div className="l-feat-fval g" style={{ fontSize: 18 }}>{fmtUSDG(perSeat7d)}</div>
+                    </div>
+                    <div>
+                      <div className="l-feat-flabel">HOLDING COST</div>
+                      <div className="l-feat-fval" style={{ fontSize: 16, color: 'var(--t2)' }}>
+                        {fmtUSDG(holdingCost)}<span style={{ fontSize: 11, color: 'var(--t4)' }}>/wk</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="l-feat-flabel">NET CARRY</div>
+                      <div className={`l-feat-fval${featCarry >= 0n ? ' g' : ''}`} style={{ fontSize: 16, color: featCarry < 0n ? 'var(--red)' : undefined }}>
+                        {featCarry >= 0n ? '+' : '-'}{fmtUSDG(featCarry >= 0n ? featCarry : -featCarry)}
+                        <span style={{ fontSize: 11, color: 'var(--t4)' }}>/wk</span>
+                      </div>
+                    </div>
+                    <Link href="/board/genesis" className="l-view-seat-btn">
+                      VIEW SEAT <span>→</span>
+                    </Link>
                   </div>
-                </div>
-                <Link href="/hood" className="l-view-seat-btn">
-                  VIEW SEAT <span>→</span>
-                </Link>
-              </div>
+                )
+              })()}
             </div>
           ) : (
             <div className="l-feat-lower" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
