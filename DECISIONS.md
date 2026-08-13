@@ -87,6 +87,42 @@ Impact: PRODUCT.md is now the canonical source for all product decisions. CLAUDE
 
 ---
 
+## 2026-08-13 — Final Product Spec locked
+
+Decision: Adopt the 62-point Final Product Spec as the canonical build target. Key structural decisions locked within it:
+
+**Contract naming**: `BoardCore.sol` (was `Board_v2.sol`), `BoardVault.sol` (was `BoardRewardsVault.sol`), `BoardRegistry.sol` (new — stores board config onchain).
+
+**Reward smoothing**: `BoardVault` must stream realized revenue over a configurable interval rather than depositing in a single block. Reduces reward sniping, MEV, and abrupt cashflow spikes. Exact parameters configurable in the simulator.
+
+**No minimum hold to earn**: 30 minutes of active ownership = 30 minutes of accrued rewards. Continuous accounting already handles this; no artificial floor will be added.
+
+**Net Carry as primary metric**: The four core numbers every Seat revolves around are ASK / REALIZED REWARDS / HOLDING COST / NET CARRY. Net Carry (trailing rewards minus holding cost) is what tells the owner whether the Seat is currently profitable. Must be displayed prominently. Negative carry must not be hidden.
+
+**Boardroom de-emphasized**: Boardroom is no longer central to V1. Access gate (≥1 ACTIVE or GRACE Seat) is preserved in contracts; the boardroom panel may be added to the UI later but is not part of the launch feature set.
+
+**Navigation structure locked**: BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE. No giant sidebar.
+
+**Simulator regimes required**: MockStrategyAdapter must support configurable market regimes — DEAD / QUIET / NORMAL / HIGH VOLUME / EVENT SPIKE / CRASH — for controlled testing without implying future APY.
+
+**Launch sequence locked** (6 stages):
+1. Testnet — 100 Seats, Mock Strategy, real mechanics
+2. Private Beta — invite-only, observe pricing/takeover/carry behavior
+3. Real Strategy Integration — one Robinhood Chain RWA strategy (likely NVDA/USDG LP)
+4. Security + Legal Review — required before real RWA rewards
+5. Mainnet Genesis — one Board, 100 Seats, no protocol token
+6. Community Feedback — only then evaluate expansion
+
+**Seat artwork**: "History is rarity." No random traits. Artwork evolves based on actual Seat history. Appears in Seat detail, profile, share cards, external markets (if any). Grid remains terminal-style.
+
+Reason: Consolidates all product decisions made through August 2026 into a single authoritative reference document. Prevents spec drift.
+
+Alternatives: Continue with incremental CLAUDE.md/PRODUCT.md patches. Rejected — too fragmented.
+
+Impact: Existing contracts (Board.sol 73 tests, RewardAccounting.sol 30 tests, Board_v2.sol 24 tests) are unaffected. New work items: BoardRegistry.sol, BoardVault smoothing, simulator regimes, frontend Net Carry display, landing page. Contract rename (Board_v2 → BoardCore, BoardRewardsVault → BoardVault) applies to new files going forward — existing deployed/committed names are not retroactively changed.
+
+---
+
 ## 2026-08-12 — Product direction: Productive Seat model
 
 Decision: Extend BOARD from a pure social ownership game to contestable Seats around a productive onchain market position. ACTIVE Seats earn from the Board's underlying strategy revenue. GRACE pauses accrual (gap not retroactively filled). Ownership transfers atomically bank the old owner's accrued earnings and begin the new owner's accrual. Time-weighted globalIndex accounting (no snapshot-based approach).
