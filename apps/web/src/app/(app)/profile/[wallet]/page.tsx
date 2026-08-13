@@ -4,11 +4,12 @@ import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { useAccount } from 'wagmi'
 import Link from 'next/link'
-import { fmtAddr, padSeat, fmtUSDG } from '@/lib/format'
+import { fmtAddr, padSeat, fmtUSDG, fmtDate, eventLabel } from '@/lib/format'
 
 type ProfileData = {
   wallet: string
   seatsHeld: number
+  lifetimeRewards: string
   stats: {
     seats_taken: string
     takeovers_initiated: string
@@ -18,6 +19,11 @@ type ProfileData = {
     seat_id: number
     status: string
     price: string | null
+  }[]
+  formerSeats: {
+    seat_id: number
+    event_type: string
+    occurred_at: string | null
   }[]
 }
 
@@ -88,6 +94,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        <div className="pf-rewards-row">
+          <div className="pf-rewards-label">LIFETIME REWARDS</div>
+          <div className="pf-rewards-val">{fmtUSDG(data?.lifetimeRewards ?? '0')}</div>
+        </div>
+
         {data?.seats && data.seats.length > 0 ? (
           <div>
             <div className="section-title">Current Seats</div>
@@ -124,6 +135,37 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="empty-state">No seats currently held</div>
+        )}
+
+        {data?.formerSeats && data.formerSeats.length > 0 && (
+          <div>
+            <div className="section-title">Former Seats</div>
+            <div className="pf-seat-list">
+              <div className="pf-seat-head">
+                <span>Seat</span>
+                <span>Lost Via</span>
+                <span>Date</span>
+                <span />
+                <span />
+                <span />
+              </div>
+              {data.formerSeats.map(s => (
+                <div key={s.seat_id} className="pf-seat-row pf-former-row">
+                  <span className="pf-c1">{padSeat(s.seat_id)}</span>
+                  <span
+                    className="pf-c3"
+                    style={{ color: s.event_type === 'SeatForeclosed' ? 'var(--red)' : 'var(--t2)' }}
+                  >
+                    {eventLabel(s.event_type)}
+                  </span>
+                  <span className="pf-c3" style={{ color: 'var(--t3)' }}>{fmtDate(s.occurred_at)}</span>
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>
