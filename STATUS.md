@@ -2,75 +2,79 @@
 
 ## Current Phase
 
-**PHASE 1 — PRODUCTIVE SIMULATOR**
+**PHASE 1 COMPLETE — PRIVATE BETA READY**
 
-Final product spec locked 2026-08-13. One Board, 100 Seats, Mock Strategy, real mechanics, terminal UI.
-
-Engineering priority:
-
-```
-P0  Base Seat engine (Board.sol)                ✅ COMPLETE  73/73 tests
-P1  Reward accounting contracts                 ✅ COMPLETE  54 new tests (30 + 24)
-    Board_v2/BoardCore · RewardAccounting
-    BoardVault · MockStrategyAdapter
-P2  BoardRegistry contract                      ✅ COMPLETE  24 tests  (2026-08-13)
-P3  Reward smoothing in BoardVault              ✅ COMPLETE  23 tests  (2026-08-13)
-P4  Parameterize HOOD hardcoding                ✅ COMPLETE  (2026-08-13)
-    indexer config · API routes → [boardId] · env-var driven
-P5  Reward indexer + DB tables                  ✅ COMPLETE  (2026-08-13)
-    reward_deposits · seat_reward_state · reward_claims
-    RewardDeposited · EarningsBanked · RewardClaimed handlers
-P6  Reward API endpoints                        ✅ COMPLETE  (2026-08-13)
-    /api/boards/[boardId]/rewards
-    /api/boards/[boardId]/seats/[seatId]/rewards
-    /api/profiles/[wallet]/rewards
-P7  Full lifecycle proof (testnet, incl.        ✅ COMPLETE  (2026-08-13)
-    rewards E2E)                                    all 9 steps + reward E2E (R1–R6)
-P8  Functional frontend updates                 🔲 TODO  (base frontend ✅ merged PR #4)
-    Net Carry · 4 core numbers · Rewards page
-    New nav structure · Landing page
-P9  Simulator regimes                           🔲 TODO
-    DEAD · QUIET · NORMAL · HIGH VOLUME · EVENT SPIKE · CRASH
-P10 User testing (5+ real users, full loop)     🔲 TODO
-```
+All backend (P0–P7) and frontend finishing (P9–P14) work is done.
+System is ready for private beta testing with real users on testnet.
 
 ---
 
 ## Completed
 
-- `PRODUCT.md`, `BUILD_SPEC.md`, `CLAUDE.md`, `DECISIONS.md` — docs updated to Final Product Spec (2026-08-13)
+### Backend + Contracts (P0–P7)
+
+- `PRODUCT.md`, `BUILD_SPEC.md`, `CLAUDE.md`, `DECISIONS.md` — locked to Final Product Spec
 - `Board.sol` — full Seat state machine (100 Seats, lazy fee accrual, grace/foreclosure, transfer restriction)
 - `Board.t.sol` — 73 tests: unit, fuzz (1000 runs), invariant (256×50), full accounting reconciliation
 - `DeployTestnet.s.sol` — deploy script with environment variable configuration
 - Board.sol deployed to Robinhood Chain testnet (block 98751649)
 - TypeScript indexer — event indexer, idempotent, cursor-persisted, rebuildable from genesis
-- Next.js backend — 9 REST endpoints, all verified against contract state
-- Lifecycle steps 1–7 proven on testnet (take, reprice, top-up, takeover, grace, recovery, second depletion)
-- `BACKEND_PROOF.md` — populated with network, contracts, tests, API, steps 1–7 tx hashes
-- Functional frontend (`apps/web`) — board grid, seat drawer, take/reprice/top-up/takeover/foreclose flows, activity feed, profile, leaderboard, share card
-- **Reward accounting contract suite** (2026-08-13, branch `claude/new-product-workflow-check-mw96bb`):
-  - `IRewardAccounting.sol` — lifecycle hook interface
-  - `RewardAccounting.sol` — WAD-precision globalIndex engine; ACTIVE earns, GRACE pauses, transfers bank atomically
-  - `Board_v2.sol` — standalone Board with lazy grace detection (`_syncGraceHook`) and reward hooks; backward-compatible (`ra == address(0)` = no-op)
-  - `BoardRewardsVault.sol` — orchestrates strategy harvest → ra.deposit; permissionless
-  - `MockStrategyAdapter.sol` — simulateYield + harvest for test scenarios
-  - `MockRewardToken.sol` — mintable ERC-20 for testing
-  - `RewardAccounting.t.sol` — 30 tests (unit / fuzz / invariant)
-  - `Board_v2.t.sol` — 24 integration tests (all lifecycle paths, vault flow, fuzz)
-- **BoardRegistry.sol + BoardVault.sol** (2026-08-13):
-  - `BoardRegistry.sol` — onchain board config store; PENDING/ACTIVE/PAUSED/DEPRECATED status; 24 tests
-  - `BoardVault.sol` — linear reward smoothing over configurable `streamDuration`; roll-over on new harvest; 23 tests
-  - Grand total: **174 / 174** ✅
-- **P4 parameterization** (2026-08-13): indexer config env-var driven; all API routes converted to `/api/boards/[boardId]/` and `/api/boardrooms/[boardId]/`; activity/leaderboard/profiles use `BOARD_ID` env var
-- **P5 reward indexer** (2026-08-13): `reward_deposits`, `seat_reward_state`, `reward_claims` tables; `RewardDeposited`, `EarningsBanked`, `RewardClaimed` event handlers; dual-contract log fetching (board + reward accounting)
-- **P6 reward API** (2026-08-13): `/api/boards/[boardId]/rewards`, `/api/boards/[boardId]/seats/[seatId]/rewards`, `/api/profiles/[wallet]/rewards`
+- Next.js backend — 12 REST endpoints, all verified against contract state
+- Lifecycle steps 1–9 proven on testnet (take, reprice, top-up, takeover, grace, recovery, second depletion, foreclosure, re-take)
+- `BACKEND_PROOF.md` — full lifecycle + reward E2E with tx hashes
+- Functional frontend — board grid, seat drawer, take/reprice/top-up/takeover/foreclose flows, activity feed, profile, leaderboard, share card, rewards page
+- **Reward accounting contract suite** (2026-08-13):
+  - `IRewardAccounting.sol`, `RewardAccounting.sol`, `Board_v2.sol`, `BoardRewardsVault.sol`, `MockStrategyAdapter.sol`, `MockRewardToken.sol`
+  - 30 + 24 tests (unit / fuzz / invariant / integration)
+- **BoardRegistry.sol + BoardVault.sol** (2026-08-13) — 24 + 23 tests
+- **Grand total: 174 / 174 ✅**
+- P4 parameterization — env-var driven boardId, all API routes converted
+- P5 reward indexer — `reward_deposits`, `seat_reward_state`, `reward_claims` tables + event handlers
+- P6 reward API — `/api/boards/[boardId]/rewards`, `/api/boards/[boardId]/seats/[seatId]/rewards`, `/api/profiles/[wallet]/rewards`
+- P7 full lifecycle proof — steps 1–9 + reward E2E (R0–R6) on testnet
+
+### Frontend Finishing (P9–P14) — 2026-08-14
+
+- **P9 — Route refactor**: `/board/hood` → `/board/genesis`, board-resolver alias (`genesis` → `hood` DB slug), zero migration
+- **P10 — Economic visibility**: Net Carry on seat grid (lime = positive, red = negative); per-seat weekly stats in drawer; 4 core numbers: ASK / WEEKLY COST / COVERAGE / NET CARRY; tape now shows live activity via API; 7D reward deposit stats
+- **P11 — Profile + Leaderboard depth**:
+  - Profile: Lifetime Rewards banner, Former Seats section (lost-via, date)
+  - Leaderboard: Top Earners (total USDG earned) + Longest Holders (total days via hold-time CTE) sections
+- **P12 — Takeover experience**:
+  - Seat Notifications strip (GRACE / FORECLOSABLE / low-reserve warnings for owned seats)
+  - Takeover preview panel: 7D yield / weekly holding cost / net carry per seat
+  - "SEAT IS YOURS" success state for take and takeover completions
+- **P13 — Simulator admin page** (`/admin/simulator` — not in nav):
+  - 6 regime buttons: DEAD · QUIET · NORMAL · HIGH VOLUME · EVENT SPIKE · CRASH
+  - Stage yield (owner wallet required) + Collect & Deposit (permissionless)
+  - TESTNET · SIMULATED YIELD ONLY badge displayed prominently
+- **P14 — Mobile responsive layout**:
+  - Mobile nav bar (bottom tabs) replacing hidden desktop nav on small screens
+  - Board grid: 10-col → 5-col on mobile
+  - Drawer: full-width bottom sheet with `transform: translateY` animation
+  - Leaderboard: 2-col grid → 1-col stack
+  - Profile stats: 4-col → 2-col
+  - Simulator regime grid: 3-col → 2-col
+  - Safe area inset support for notch phones
+
+---
+
+## In Progress
+
+**P15 — QA + Private Beta Prep**
+
+- [ ] Update STATUS.md ← this file
+- [ ] Update BACKEND_PROOF.md with frontend notes
+- [ ] Known issues audit
+- [ ] End-to-end testing with multiple wallets on testnet
 
 ---
 
 ## Blockers
 
 - Remote execution environment egress policy blocks rpc.testnet.chain.robinhood.com:443
-  → All write transactions (testnet deploy, lifecycle proof steps 8–9, reward E2E) must be run from local machine
+  → All write transactions must be run from local machine
+- 5+ real users completing full loop required before design polish (CLAUDE.md design phase gate)
 
 ---
 
@@ -101,28 +105,40 @@ Board_v2.sol (integration):
   Fuzz:            1 / 1   ✅  (1000 runs)
   Total:          24 / 24  ✅
 
-BoardRegistry.sol:
-  Registration:    8 / 8   ✅
-  Status:          4 / 4   ✅
-  Strategy:        4 / 4   ✅
-  Views:           4 / 4   ✅
-  Fuzz:            4 / 4   ✅  (1000 runs each)
-  Total:          24 / 24  ✅
-
-BoardVault.sol:
-  NoSmoothing:     4 / 4   ✅
-  Smoothing:      11 / 11  ✅
-  Constructor:     3 / 3   ✅
-  Fuzz:            3 / 3   ✅  (1000 runs each)
-  Total:          23 / 23  ✅
+BoardRegistry.sol:   24 / 24  ✅
+BoardVault.sol:      23 / 23  ✅
 
 Grand total:     174 / 174  ✅
 ```
 
 ---
 
-## Next (in order)
+## Known Issues (Audit — 2026-08-14)
 
-1. **P8 — Frontend updates**: Net Carry display, 4 core numbers per seat (ASK / REALIZED REWARDS / HOLDING COST / NET CARRY), Rewards page, updated nav (BOARD / GENESIS / ACTIVITY / REWARDS / LEADERBOARD / PROFILE), landing page with live 10×10 preview
-3. **P9 — Simulator regimes**: MockStrategyAdapter configurable regimes (DEAD / QUIET / NORMAL / HIGH VOLUME / EVENT SPIKE / CRASH)
-4. **P10 — User testing**: 5+ real users complete full loop including reward claims
+1. **Rewards display in USDG, not MRT** — The RewardAccounting contract uses MockRewardToken (MRT) as the reward token in testnet deployment. Frontend formats reward amounts as USDG via `fmtUSDG()`. This is correct for testnet (MRT and USDG both 6 decimals for display purposes) but may need updating if reward token changes pre-mainnet.
+
+2. **`/board/hood` legacy route** — Old route still exists at `apps/web/src/app/(app)/hood/page.tsx`. The `board-resolver` alias handles DB lookup correctly, but the page file is a dead route. Low priority; no user-facing impact.
+
+3. **Board_v2 address not used in frontend seat actions** — The main board grid page uses `BOARD_ADDRESS` (Board.sol original) for take/topup/reprice/foreclose. Board_v2 rewards work through a separate contract. The two are running side-by-side on testnet. Before mainnet launch, these must be unified (use Board_v2 for everything).
+
+4. **Simulator owner-only constraint** — `simulateYield()` on MockStrategyAdapter requires the owner wallet. The simulator page requires connecting the deployer EOA. There is no access control at the page level (anyone can see the page if they know the URL), but the contract will revert for non-owner callers, so no funds at risk.
+
+5. **Tape scroll animation** — The scrolling tape (`.tape-track`) animation duration is hardcoded to `60s`. With 30+ events it runs fine, but with very few events the tape may loop visibly. Cosmetic only.
+
+6. **Net Carry precision** — Weekly reward estimate uses 7D deposit history divided by active seat count. This is a trailing average and may be zero if no reward deposits occurred in the last 7 days (as is typical early in testnet). The display correctly shows `$0.00` in that case.
+
+7. **`weeksRemaining` with price = 0** — If a seat has price=0 (which shouldn't happen per contract logic), `weeksRemaining()` would return Infinity or NaN. Seat notifications guard on `s.price` truthiness, so this is safe.
+
+---
+
+## Next (P15 remaining)
+
+1. End-to-end playtest with multiple wallets:
+   - Wallet A takes seat, wallet B takes it over, wallet A takes it back
+   - Confirm rewards accrue and are visible on the Rewards page
+   - Confirm seat notifications fire correctly (grace, foreclosable)
+   - Confirm mobile layout on a real device
+
+2. Share `/admin/simulator` URL with operator — used to cycle through regimes during beta
+
+3. When 5+ real users have completed the full loop: proceed to design polish (CLAUDE.md gate)

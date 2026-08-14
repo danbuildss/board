@@ -270,7 +270,27 @@ All routes parameterized by boardId (env-var driven, no hardcoded slugs).
 
 ---
 
+## Frontend (P9–P14) — 2026-08-14
+
+All frontend finishing work complete on branch `claude/new-product-workflow-check-mw96bb`.
+
+| Phase | Feature | Status |
+|---|---|---|
+| P9 | Route refactor: `/board/hood` → `/board/genesis` | ✅ |
+| P10 | Economic visibility: Net Carry, 4 core numbers, live tape | ✅ |
+| P11 | Profile: Lifetime Rewards + Former Seats | ✅ |
+| P11 | Leaderboard: Top Earners + Longest Holders | ✅ |
+| P12 | Takeover: reward preview, seat notifications, "SEAT IS YOURS" | ✅ |
+| P13 | Admin simulator (`/admin/simulator`) — testnet only | ✅ |
+| P14 | Mobile responsive layout (5-col grid, bottom nav, drawer sheet) | ✅ |
+
+PRs merged: #7 (P9–P12), #8 (P9–P14 combined)
+
+---
+
 ## Known Issues
 
 - Board_v2 reward E2E used streamDuration=0 (no smoothing) for simplicity. Production smoothing (7-day default) is implemented in BoardVault and covered by 23 unit tests.
 - Lifecycle steps 1–9 were run on Board.sol (original). Board_v2 base engine is identical; reward E2E (R1–R6) validates the reward layer on top.
+- Frontend seat actions (take/topup/reprice/foreclose) target Board.sol (original). Board_v2 runs in parallel on testnet for reward proofing. Before mainnet: unify to Board_v2.
+- Rewards formatted as USDG on frontend; testnet reward token is MockRewardToken (MRT). Both are 6-decimal for display. Update before mainnet if reward token changes.
