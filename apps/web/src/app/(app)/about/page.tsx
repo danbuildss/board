@@ -1,7 +1,7 @@
 export default function AboutPage() {
   return (
     <div className="page-scroll">
-      <div className="page-inner" style={{ maxWidth: 680, padding: '48px 40px' }}>
+      <div className="page-inner" style={{ maxWidth: 680, padding: '28px 24px' }}>
 
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
@@ -67,7 +67,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--bd0)', paddingTop: 32, marginBottom: 32 }}>
+        <div style={{ borderTop: '1px solid var(--bd0)', paddingTop: 24, marginBottom: 0 }}>
           <h2 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 16 }}>
             COMMUNITY
           </h2>

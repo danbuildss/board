@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAccount, useChainId } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { usePrivy } from '@privy-io/react-auth'
 import { useQuery } from '@tanstack/react-query'
 import { fmtAddr, fmtTimestamp, eventLabel, padSeat } from '@/lib/format'
@@ -61,13 +61,7 @@ function Tape() {
   )
 }
 
-const NAV_PUBLIC = [
-  { href: '/board/genesis', label: 'BOARD' },
-  { href: '/activity',      label: 'ACTIVITY' },
-  { href: '/about',         label: 'ABOUT' },
-]
-
-const NAV_CONNECTED = [
+const NAV_LINKS = [
   { href: '/board/genesis', label: 'BOARD' },
   { href: '/activity',      label: 'ACTIVITY' },
   { href: '/rewards',       label: 'REWARDS' },
@@ -75,11 +69,10 @@ const NAV_CONNECTED = [
   { href: '/about',         label: 'ABOUT' },
 ]
 
-function MobileNav({ pathname, address }: { pathname: string; address: string | undefined }) {
-  const nav = address ? NAV_CONNECTED : NAV_PUBLIC
+function MobileNav({ pathname }: { pathname: string }) {
   return (
     <nav className="mobile-nav">
-      {nav.map(n => (
+      {NAV_LINKS.map(n => (
         <Link
           key={n.href}
           href={n.href}
@@ -94,10 +87,8 @@ function MobileNav({ pathname, address }: { pathname: string; address: string | 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const chainId = useChainId()
-  const { address } = useAccount()
-  const wrongChain = chainId !== 0 && chainId !== CHAIN_ID
-  const nav = address ? NAV_CONNECTED : NAV_PUBLIC
+  const { chainId } = useAccount()
+  const wrongChain = !!chainId && chainId !== CHAIN_ID
 
   return (
     <div className="shell">
@@ -107,7 +98,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <span className="shell-badge">GENESIS · 100 SEATS</span>
         </div>
         <nav className="shell-nav">
-          {nav.map(n => (
+          {NAV_LINKS.map(n => (
             <Link
               key={n.href}
               href={n.href}
@@ -131,7 +122,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <Tape />
-      <MobileNav pathname={pathname} address={address} />
+      <MobileNav pathname={pathname} />
     </div>
   )
 }

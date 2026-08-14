@@ -627,7 +627,6 @@ input { font-family: inherit; font-size: inherit; }
 /* Hero section */
 .l-hero {
   display: grid; grid-template-columns: 1fr 1fr;
-  min-height: calc(100vh - 56px);
 }
 @media (max-width: 900px) { .l-hero { grid-template-columns: 1fr; } }
 
