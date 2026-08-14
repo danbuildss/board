@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { fmtUSDG, padSeat, eventLabel, weeklyFee } from '@/lib/format'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 type Seat = { seatId: number; status: string; price?: string; weeklyHoldingCost?: string }
 type BoardRewardsData = {
@@ -288,7 +289,10 @@ export default function LandingPage() {
           <Link href="/leaderboard" className="l-nav-link">LEADERBOARD</Link>
           <Link href="/about"       className="l-nav-link">ABOUT</Link>
         </div>
-        <Link href="/board/genesis" className="l-nav-enter">ENTER BOARD →</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ThemeToggle />
+          <Link href="/board/genesis" className="l-nav-enter">ENTER BOARD →</Link>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
