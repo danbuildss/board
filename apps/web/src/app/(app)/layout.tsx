@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAccount, useConnect, useDisconnect, useChainId } from 'wagmi'
-import { injected } from 'wagmi/connectors/injected'
+import { useAccount, useChainId } from 'wagmi'
+import { usePrivy } from '@privy-io/react-auth'
 import { useQuery } from '@tanstack/react-query'
 import { fmtAddr, fmtTimestamp, eventLabel, padSeat } from '@/lib/format'
 import { CHAIN_ID } from '@/lib/config'
@@ -16,20 +16,19 @@ type TapeEvent = {
 }
 
 function WalletBtn() {
-  const { address, isConnected } = useAccount()
-  const { connect } = useConnect()
-  const { disconnect } = useDisconnect()
+  const { login, logout, authenticated } = usePrivy()
+  const { address } = useAccount()
 
-  if (isConnected && address) {
+  if (authenticated && address) {
     return (
-      <button className="wbtn connected" onClick={() => disconnect()}>
+      <button className="wbtn connected" onClick={logout}>
         <span className="wdot" />
         {fmtAddr(address)}
       </button>
     )
   }
   return (
-    <button className="wbtn" onClick={() => connect({ connector: injected() })}>
+    <button className="wbtn" onClick={login}>
       Connect Wallet
     </button>
   )

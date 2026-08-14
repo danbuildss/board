@@ -1,5 +1,5 @@
-import { createConfig, http } from 'wagmi'
-import { injected } from 'wagmi/connectors/injected'
+import { createConfig } from '@privy-io/wagmi'
+import { http } from 'wagmi'
 import { defineChain } from 'viem'
 
 export const robinhoodTestnet = defineChain({
@@ -23,6 +23,5 @@ export const CHAIN_ID              = 46630
 
 export const wagmiConfig = createConfig({
   chains: [robinhoodTestnet],
-  connectors: [injected()],
   transports: { [robinhoodTestnet.id]: http() },
 })
