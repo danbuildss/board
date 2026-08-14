@@ -63,18 +63,35 @@ function Tape() {
 }
 
 const NAV_PUBLIC = [
-  { href: '/board/genesis',     label: 'BOARD' },
-  { href: '/activity', label: 'ACTIVITY' },
-  { href: '/about',    label: 'ABOUT' },
+  { href: '/board/genesis', label: 'BOARD' },
+  { href: '/activity',      label: 'ACTIVITY' },
+  { href: '/about',         label: 'ABOUT' },
 ]
 
 const NAV_CONNECTED = [
-  { href: '/board/genesis',        label: 'BOARD' },
-  { href: '/activity',    label: 'ACTIVITY' },
-  { href: '/rewards',     label: 'REWARDS' },
-  { href: '/leaderboard', label: 'LEADERBOARD' },
-  { href: '/about',       label: 'ABOUT' },
+  { href: '/board/genesis', label: 'BOARD' },
+  { href: '/activity',      label: 'ACTIVITY' },
+  { href: '/rewards',       label: 'REWARDS' },
+  { href: '/leaderboard',   label: 'LBOARD' },
+  { href: '/about',         label: 'ABOUT' },
 ]
+
+function MobileNav({ pathname, address }: { pathname: string; address: string | undefined }) {
+  const nav = address ? NAV_CONNECTED : NAV_PUBLIC
+  return (
+    <nav className="mobile-nav">
+      {nav.map(n => (
+        <Link
+          key={n.href}
+          href={n.href}
+          className={`mob-link${pathname === n.href || pathname.startsWith(n.href + '/') ? ' active' : ''}`}
+        >
+          {n.label}
+        </Link>
+      ))}
+    </nav>
+  )
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -115,6 +132,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <Tape />
+      <MobileNav pathname={pathname} address={address} />
     </div>
   )
 }
