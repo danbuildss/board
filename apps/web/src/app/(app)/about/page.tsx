@@ -1,7 +1,7 @@
 export default function AboutPage() {
   return (
     <div className="page-scroll">
-      <div className="page-inner" style={{ maxWidth: 680, padding: '28px 24px' }}>
+      <div className="page-inner" style={{ maxWidth: 680, padding: '28px 24px', gap: 0 }}>
 
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 8 }}>
