@@ -59,6 +59,43 @@
   --font-mono: var(--font-geist-mono, ui-monospace, 'Cascadia Code', Menlo, monospace);
 }
 
+/* ── Light mode overrides ────────────────────────────────── */
+[data-theme="light"] {
+  --bg0: #ffffff;
+  --bg1: #fafafa;
+  --bg2: #f5f5f5;
+  --bg3: #efefef;
+  --bg4: #e8e8e8;
+  --bd0: #e0e0e0;
+  --bd1: #d0d0d0;
+  --bd2: #b8b8b8;
+  --t1: #0a0a0a;
+  --t2: #444444;
+  --t3: #888888;
+  --t4: #bbbbbb;
+  --green: #4a8600;
+  --green-d: #2a4c00;
+  --green-bg: #eeffd6;
+  --status-ok:   #3a8000;
+  --status-warn: #966000;
+  --status-grace:#b04a00;
+  --status-crit: #cc0000;
+  --status-info: #0066cc;
+  --amber: var(--status-warn);
+  --amber-d: #5a3800;
+  --amber-bg: #fff8e0;
+  --red: var(--status-crit);
+  --red-d: #880000;
+  --red-bg: #fff0f0;
+  --s0: var(--bg0);
+  --s1: var(--bg2);
+  --s2: var(--bg3);
+  --s3: var(--bg4);
+  --bd: var(--bd0);
+  --bm: var(--bd1);
+  --black: #000;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; }
 body {
@@ -132,6 +169,16 @@ input { font-family: inherit; font-size: inherit; }
 }
 .tape-event .te-type { color: var(--t2); }
 .tape-event .te-seat { color: var(--t1); }
+
+/* ── Theme toggle ───────────────────────────────────────── */
+.theme-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--r-sm);
+  border: 1px solid var(--bd1); background: transparent;
+  color: var(--t3); cursor: pointer; flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+}
+.theme-btn:hover { border-color: var(--bd2); color: var(--t1); }
 
 /* ── Wallet button ──────────────────────────────────────── */
 .wbtn {

@@ -7,6 +7,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useQuery } from '@tanstack/react-query'
 import { fmtAddr, fmtTimestamp, eventLabel, padSeat } from '@/lib/format'
 import { CHAIN_ID } from '@/lib/config'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 type TapeEvent = {
   event_type: string
@@ -108,7 +109,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <WalletBtn />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ThemeToggle />
+          <WalletBtn />
+        </div>
       </header>
 
       {wrongChain && (

@@ -562,12 +562,25 @@ export default function HoodPage() {
                   {address ? `Take ${padSeat(selectedSeat.seatId)}` : 'Connect to Take'}
                 </button>
               ) : isMine(selectedSeat) ? (
-                <div className="abtn-row">
-                  <button className="abtn-sm" onClick={() => openModal('topup', selectedSeat)}>
-                    Top Up
-                  </button>
-                  <button className="abtn-sm" onClick={() => openModal('reprice', selectedSeat)}>
-                    Reprice
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div className="abtn-row">
+                    <button className="abtn-sm" onClick={() => openModal('topup', selectedSeat)}>
+                      Top Up
+                    </button>
+                    <button className="abtn-sm" onClick={() => openModal('reprice', selectedSeat)}>
+                      Reprice
+                    </button>
+                  </div>
+                  <button
+                    className="abtn-sm"
+                    style={{ width: '100%' }}
+                    onClick={() => {
+                      const price = selectedSeat.price ? `$${(+selectedSeat.price / 1_000_000).toFixed(0)}` : ''
+                      const text = `I own Seat ${padSeat(selectedSeat.seatId)} on BOARD #001 / GENESIS${price ? ` · Ask ${price}` : ''}.\n\nThink you can take it?\n\nhttps://playboard.xyz/board/genesis`
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
+                    }}
+                  >
+                    Share Seat →
                   </button>
                 </div>
               ) : selectedSeat.status === 'FORECLOSABLE' ? (
@@ -1008,7 +1021,23 @@ function ActionModal({
 
         <div className="modal-actions">
           {step === 'done' ? (
-            <button className="mbtn secondary" onClick={onClose}>Close</button>
+            <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+              <button className="mbtn secondary" onClick={onClose} style={{ flex: 1 }}>Close</button>
+              <button
+                className="mbtn primary"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  const isOwnership = modal === 'take' || modal === 'takeover'
+                  const price = seat.price ? `$${(+seat.price / 1_000_000).toFixed(0)}` : ''
+                  const text = isOwnership
+                    ? `Just took Seat ${padSeat(seat.seatId)} on BOARD #001 / GENESIS${price ? ` · Ask ${price}` : ''}.\n\nCan you take it from me?\n\nhttps://playboard.xyz/board/genesis`
+                    : `Seat ${padSeat(seat.seatId)} updated on BOARD #001 / GENESIS.\n\nhttps://playboard.xyz/board/genesis`
+                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
+                }}
+              >
+                Share on X
+              </button>
+            </div>
           ) : (
             <>
               <button className="mbtn secondary" onClick={onClose} disabled={busy}>
