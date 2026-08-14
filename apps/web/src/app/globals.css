@@ -148,6 +148,15 @@ input { font-family: inherit; font-size: inherit; }
   background: var(--green); flex-shrink: 0;
   box-shadow: 0 0 6px var(--green);
 }
+.social-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: var(--r-sm);
+  border: 1px solid var(--bd1); background: var(--bg2);
+  color: var(--t2); font-size: 13px; font-weight: 500;
+  text-decoration: none; letter-spacing: .02em;
+  transition: border-color .15s, color .15s;
+}
+.social-btn:hover { border-color: var(--green); color: var(--t1); }
 
 /* ── Page scroll area ───────────────────────────────────── */
 .page-scroll { flex: 1; overflow-y: auto; }
@@ -618,7 +627,6 @@ input { font-family: inherit; font-size: inherit; }
 /* Hero section */
 .l-hero {
   display: grid; grid-template-columns: 1fr 1fr;
-  min-height: calc(100vh - 56px);
 }
 @media (max-width: 900px) { .l-hero { grid-template-columns: 1fr; } }
 
