@@ -486,7 +486,7 @@ export default function SeatDetailPage() {
               <div className="sd-section">
                 <div className="sd-section-head">
                   <span className="sd-section-title">YIELD OVERVIEW</span>
-                  <span className="sd-sim-tag">SIMULATED</span>
+                  <span className="sd-sim-tag">TESTNET</span>
                 </div>
                 <div className="sd-yield-grid">
                   <div className="sd-yield-cell">
@@ -772,7 +772,7 @@ function SeatActionModal({
             <div className="crow"><span>PROTOCOL FEE</span><span className="cv dim">{fmtUSDG(protocolFee)}</span></div>
           </div>
           <div className="takeover-preview">
-            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING · SIMULATED)</div>
+            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING · TESTNET)</div>
             <div className="tp-rows">
               <div className="tp-row"><span>7D reward / seat</span><span className="tp-v g">{fmtUSDG(rewards7d)}</span></div>
               <div className="tp-row"><span>Holding cost</span><span className="tp-v dim">−{fmtUSDG(wkCost)}</span></div>
