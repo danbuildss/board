@@ -39,5 +39,7 @@ export async function GET(
     activeSeatCount:     t.active_seat_count ?? 0,
     depositCount:        parseInt(t.deposit_count ?? '0'),
     recentDeposits:      recentRes.rows,
+  }, {
+    headers: { 'Cache-Control': 's-maxage=30, stale-while-revalidate=60' },
   });
 }

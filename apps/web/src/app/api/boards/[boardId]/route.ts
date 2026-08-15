@@ -45,5 +45,7 @@ export async function GET(
       foreclosable: parseInt(s.foreclosable),
       uniqueOwners: parseInt(s.unique_owners),
     },
+  }, {
+    headers: { 'Cache-Control': 's-maxage=15, stale-while-revalidate=30' },
   });
 }

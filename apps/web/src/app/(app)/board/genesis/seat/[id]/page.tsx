@@ -147,9 +147,11 @@ export default function SeatDetailPage() {
     refetchInterval: 60_000,
   })
 
-  const { data: seatsData } = useQuery<{ seats: Seat[] }>({
-    queryKey: ['seats'],
-    queryFn: () => fetch('/api/boards/genesis/seats').then(r => r.json()),
+  const { data: seatsData } = useQuery<{ seats: { seatId: number; status: string }[] }>({
+    queryKey: ['seats-lite'],
+    queryFn: () => fetch('/api/boards/genesis/seats?lite=1').then(r => r.json()),
+    refetchInterval: 30_000,
+    staleTime: 15_000,
   })
   const allSeats = seatsData?.seats ?? []
 
