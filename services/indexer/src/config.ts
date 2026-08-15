@@ -6,8 +6,8 @@ function required(key: string): string {
 
 export const config = {
   rpcUrl:                   process.env.RPC_URL          ?? 'https://rpc.testnet.chain.robinhood.com',
-  boardAddress:             (process.env.BOARD_ADDRESS   ?? '0x0a3932a24dCC9Bbd7BFC448Da99265EC58F806DB') as `0x${string}`,
-  rewardAccountingAddress:  (process.env.REWARD_ACCOUNTING_ADDRESS ?? '') as `0x${string}`,
+  boardAddress:             (process.env.BOARD_ADDRESS   ?? '0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E') as `0x${string}`,
+  rewardAccountingAddress:  (process.env.REWARD_ACCOUNTING_ADDRESS ?? '0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78') as `0x${string}`,
   deploymentBlock:          BigInt(process.env.DEPLOYMENT_BLOCK ?? '98751649'),
   databaseUrl:              required('DATABASE_URL'),
   batchSize:                BigInt(process.env.BATCH_SIZE       ?? '500'),

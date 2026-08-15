@@ -39,7 +39,26 @@ export async function handleEarningsBanked(log: Log, args: {
 }): Promise<void> {
   const seatId = Number(args.seatId);
 
-  // Upsert seat_reward_state — accumulate cumulative_banked
+  // Guard via seat_events (UNIQUE on tx_hash, log_index) — prevents double-accumulation on replay
+  const guard = await pool.query(
+    `INSERT INTO seat_events
+       (board_id, seat_id, event_type, tx_hash, log_index, block_number, block_timestamp, actor, amount, occurred_at)
+     VALUES ($1, $2, 'EarningsBanked', $3, $4, $5, $6, $7, $8, $6)
+     ON CONFLICT (tx_hash, log_index) DO NOTHING`,
+    [
+      config.boardId,
+      seatId,
+      log.transactionHash!,
+      log.logIndex!,
+      log.blockNumber!.toString(),
+      toDate(args.blockTimestamp),
+      args.owner.toLowerCase(),
+      args.amount.toString(),
+    ]
+  );
+
+  if ((guard.rowCount ?? 0) === 0) return;
+
   await pool.query(
     `INSERT INTO seat_reward_state (board_id, seat_id, cumulative_banked, last_updated_block, last_updated_at)
      VALUES ($1, $2, $3, $4, NOW())

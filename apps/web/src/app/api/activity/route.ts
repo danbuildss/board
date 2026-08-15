@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
             e.amount, e.previous_price, e.new_price, e.metadata, e.occurred_at
      FROM seat_events e
      WHERE e.board_id = $3
-       AND e.event_type != 'HoldingFeesSettled'
+       AND e.event_type NOT IN ('HoldingFeesSettled', 'EarningsBanked')
      ORDER BY e.block_number DESC, e.log_index DESC
      LIMIT $1 OFFSET $2`,
     [limit, offset, BOARD_ID]
