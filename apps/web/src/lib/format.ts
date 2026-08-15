@@ -58,6 +58,9 @@ export function eventLabel(type: string): string {
     case 'SeatPriceChanged': return 'REPRICED'
     case 'SeatToppedUp':    return 'TOPPED UP'
     case 'SeatForeclosed':  return 'FORECLOSED'
+    case 'EarningsBanked':  return 'EARNED'
+    case 'RewardClaimed':   return 'CLAIMED'
+    case 'RewardDeposited': return 'REWARD IN'
     default:                return type.toUpperCase()
   }
 }

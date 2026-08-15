@@ -405,11 +405,19 @@ export default function SeatDetailPage() {
               <div className="sd-mini-legend">
                 <div className="sd-legend-item">
                   <div className="sd-legend-dot" style={{ background: 'var(--green-d)' }} />
-                  {boardRewards?.activeSeatCount ?? 0} ACTIVE
+                  {allSeats.filter(s => s.status === 'ACTIVE').length} ACTIVE
                 </div>
                 <div className="sd-legend-item">
                   <div className="sd-legend-dot" style={{ background: 'var(--bg4)' }} />
-                  {100 - (boardRewards?.activeSeatCount ?? 0)} VACANT
+                  {allSeats.filter(s => s.status === 'VACANT').length} VACANT
+                </div>
+                <div className="sd-legend-item">
+                  <div className="sd-legend-dot" style={{ background: 'var(--status-grace)' }} />
+                  {allSeats.filter(s => s.status === 'GRACE').length} GRACE
+                </div>
+                <div className="sd-legend-item">
+                  <div className="sd-legend-dot" style={{ background: 'var(--red)' }} />
+                  {allSeats.filter(s => s.status === 'FORECLOSABLE').length} FORE
                 </div>
               </div>
             </div>
@@ -478,7 +486,7 @@ export default function SeatDetailPage() {
               <div className="sd-section">
                 <div className="sd-section-head">
                   <span className="sd-section-title">YIELD OVERVIEW</span>
-                  <span className="sd-sim-tag">SIMULATED</span>
+                  <span className="sd-sim-tag">TESTNET</span>
                 </div>
                 <div className="sd-yield-grid">
                   <div className="sd-yield-cell">
@@ -764,7 +772,7 @@ function SeatActionModal({
             <div className="crow"><span>PROTOCOL FEE</span><span className="cv dim">{fmtUSDG(protocolFee)}</span></div>
           </div>
           <div className="takeover-preview">
-            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING · SIMULATED)</div>
+            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING · TESTNET)</div>
             <div className="tp-rows">
               <div className="tp-row"><span>7D reward / seat</span><span className="tp-v g">{fmtUSDG(rewards7d)}</span></div>
               <div className="tp-row"><span>Holding cost</span><span className="tp-v dim">−{fmtUSDG(wkCost)}</span></div>
@@ -803,7 +811,13 @@ function SeatActionModal({
           ? <div className="sc-title" style={{ color: 'var(--green)' }}>SEAT IS YOURS</div>
           : <div className="sc-title">{actionLabel}</div>}
         {txHash && (
-          <div className="sc-row"><span>Tx</span><span className="sc-v">{fmtAddr(txHash)}</span></div>
+          <div className="sc-row">
+            <span>Tx</span>
+            <a href={`https://explorer.testnet.chain.robinhood.com/tx/${txHash}`}
+               target="_blank" rel="noopener noreferrer" className="sc-v">
+              {fmtAddr(txHash)}
+            </a>
+          </div>
         )}
       </div>
     )

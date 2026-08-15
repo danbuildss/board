@@ -1,6 +1,6 @@
 # BACKEND_PROOF.md
 
-Status: **✅ COMPLETE — Full lifecycle + reward E2E proven on testnet (2026-08-13)**
+Status: **✅ COMPLETE — Full lifecycle + reward E2E proven on testnet (2026-08-13); audit fixes applied 2026-08-15**
 
 ---
 
@@ -241,8 +241,9 @@ cast call $RA "claimable(address)(uint256)" $WALLET_B
 - Idempotent: UNIQUE(tx_hash, log_index) ON CONFLICT DO NOTHING
 - Cursor persists in indexer_state table — survives restarts
 - All 9 lifecycle scenarios indexed and queryable
-- Dual-contract log fetching: board events + reward accounting events
+- Dual-contract log fetching: board events + reward accounting events (both standalone and in-process indexer)
 - Reward tables: reward_deposits, seat_reward_state, reward_claims
+- EarningsBanked accumulation guarded by seat_events UNIQUE insert — replaying from genesis does not double-count
 - Rebuild: --rebuild flag truncates and replays from genesis block
 
 ---
@@ -288,9 +289,30 @@ PRs merged: #7 (P9–P12), #8 (P9–P14 combined)
 
 ---
 
+## Audit Fixes — 2026-08-15
+
+Post-merge audit covering correctness, indexer completeness, and UI accuracy.
+
+| # | Issue | Fix |
+|---|---|---|
+| 1 | All contract addresses pointed to Board v1 instead of v2 | Updated `config.ts`, `indexer/config.ts`, in-process indexer fallback, both `.env.example` files |
+| 2 | `rewardAccountingAddress` in standalone indexer defaulted to `''` | Now defaults to `0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78` |
+| 3 | EarningsBanked double-accumulated on indexer replay | Guard via `seat_events` UNIQUE insert; accumulate to `seat_reward_state` only if row is new |
+| 4 | EarningsBanked visible in activity feed (internal accounting event) | Excluded from activity query alongside `HoldingFeesSettled` |
+| 5 | `eventLabel` had no cases for reward event types | Added `EarningsBanked→EARNED`, `RewardClaimed→CLAIMED`, `RewardDeposited→REWARD IN` |
+| 6 | `/hood` page was a full duplicate of the board view | Replaced with `redirect('/board/genesis')` |
+| 7 | Simulator page accessible to any wallet | Gated behind `NEXT_PUBLIC_ADMIN_WALLETS` allowlist |
+| 8 | `boards/page.tsx` used raw `useEffect`/`fetch` | Converted to TanStack Query with 30s refetch interval |
+| 9 | Tx hash in success modal was plain text | Now a clickable link to `explorer.testnet.chain.robinhood.com` |
+| 10 | Mini grid legend showed only ACTIVE/VACANT | Expanded to ACTIVE/VACANT/GRACE/FORE with live counts from `allSeats` |
+| 11 | In-process indexer never fetched from `REWARD_ACCOUNTING_ADDRESS` | Added parallel `getLogs` for reward contract; handles all 3 reward events with block timestamp cache |
+| 12 | Yield section labelled "SIMULATED" on v2 testnet | Relabelled "TESTNET" (real events are being emitted) |
+
+---
+
 ## Known Issues
 
 - Board_v2 reward E2E used streamDuration=0 (no smoothing) for simplicity. Production smoothing (7-day default) is implemented in BoardVault and covered by 23 unit tests.
 - Lifecycle steps 1–9 were run on Board.sol (original). Board_v2 base engine is identical; reward E2E (R1–R6) validates the reward layer on top.
-- Frontend seat actions (take/topup/reprice/foreclose) target Board.sol (original). Board_v2 runs in parallel on testnet for reward proofing. Before mainnet: unify to Board_v2.
+- Frontend seat actions (take/topup/reprice/foreclose) now target Board_v2 (`0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E`) as of the 2026-08-15 audit fix. Address migration applied across all config files.
 - Rewards formatted as USDG on frontend; testnet reward token is MockRewardToken (MRT). Both are 6-decimal for display. Update before mainnet if reward token changes.

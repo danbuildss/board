@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { fmtUSDG, padSeat } from '@/lib/format'
 
 type Seat = { seatId: number; status: string; price?: string }
@@ -28,19 +28,19 @@ function MiniGrid({ seats }: { seats: Seat[] }) {
 
 
 export default function BoardsPage() {
-  const [seats, setSeats] = useState<Seat[]>([])
-  const [stats, setStats] = useState<BoardStats | null>(null)
+  const { data: seatsData } = useQuery<{ seats: Seat[] }>({
+    queryKey: ['boards-seats'],
+    queryFn: () => fetch('/api/boards/genesis/seats').then(r => r.json()),
+    refetchInterval: 30_000,
+  })
+  const { data: boardData } = useQuery<{ stats: BoardStats }>({
+    queryKey: ['boards-stats'],
+    queryFn: () => fetch('/api/boards/genesis').then(r => r.json()),
+    refetchInterval: 30_000,
+  })
 
-  useEffect(() => {
-    fetch('/api/boards/genesis/seats')
-      .then(r => r.json())
-      .then((d: { seats: Seat[] }) => setSeats(d.seats ?? []))
-      .catch(() => {})
-    fetch('/api/boards/genesis')
-      .then(r => r.json())
-      .then((d: { stats: BoardStats }) => setStats(d.stats))
-      .catch(() => {})
-  }, [])
+  const seats = seatsData?.seats ?? []
+  const stats = boardData?.stats ?? null
 
   const highestAsk = seats.reduce((max, s) => {
     if (!s.price) return max
