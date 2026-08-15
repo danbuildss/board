@@ -109,7 +109,7 @@ function StatusBadge({ status }: { status: Seat['status'] }) {
   )
 }
 
-function MiniBoardGrid({ seats, currentId }: { seats: Seat[]; currentId: number }) {
+function MiniBoardGrid({ seats, currentId }: { seats: { seatId: number; status: string }[]; currentId: number }) {
   const grid = Array.from({ length: 100 }, (_, i) => {
     const id = i + 1
     return seats.find(s => s.seatId === id) ?? { seatId: id, status: 'VACANT' as const }
