@@ -109,7 +109,7 @@ function StatusBadge({ status }: { status: Seat['status'] }) {
   )
 }
 
-function MiniBoardGrid({ seats, currentId }: { seats: Seat[]; currentId: number }) {
+function MiniBoardGrid({ seats, currentId }: { seats: { seatId: number; status: string }[]; currentId: number }) {
   const grid = Array.from({ length: 100 }, (_, i) => {
     const id = i + 1
     return seats.find(s => s.seatId === id) ?? { seatId: id, status: 'VACANT' as const }
@@ -147,9 +147,11 @@ export default function SeatDetailPage() {
     refetchInterval: 60_000,
   })
 
-  const { data: seatsData } = useQuery<{ seats: Seat[] }>({
-    queryKey: ['seats'],
-    queryFn: () => fetch('/api/boards/genesis/seats').then(r => r.json()),
+  const { data: seatsData } = useQuery<{ seats: { seatId: number; status: string }[] }>({
+    queryKey: ['seats-lite'],
+    queryFn: () => fetch('/api/boards/genesis/seats?lite=1').then(r => r.json()),
+    refetchInterval: 30_000,
+    staleTime: 15_000,
   })
   const allSeats = seatsData?.seats ?? []
 

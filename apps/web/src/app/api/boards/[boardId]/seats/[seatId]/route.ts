@@ -55,5 +55,7 @@ export async function GET(
     graceEndsAt:          depAt ? new Date(depAt.getTime() + 259200_000).toISOString() : null,
     updatedBlock:         row.updated_block ?? null,
     history:              eventsRes.rows,
+  }, {
+    headers: { 'Cache-Control': 's-maxage=5, stale-while-revalidate=10' },
   });
 }

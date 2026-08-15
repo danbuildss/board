@@ -5,10 +5,11 @@ import { deriveStatus, effectiveBalance, weeklyHoldingCost, estimatedDepletionAt
 import { resolveBoard } from '@/lib/board-resolver';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ boardId: string }> }
 ) {
   const boardId = resolveBoard((await params).boardId);
+  const lite = req.nextUrl.searchParams.get('lite') === '1';
 
   const res = await pool.query(
     `SELECT seat_id, owner, price, prepaid_balance, last_settled_at,
@@ -21,6 +22,8 @@ export async function GET(
 
   const seats = res.rows.map(row => {
     const status = deriveStatus(row);
+    if (lite) return { seatId: row.seat_id, status };
+
     const effBal = effectiveBalance(row);
     const weekly = weeklyHoldingCost(row.price);
     const depAt  = estimatedDepletionAt(row);
@@ -38,5 +41,7 @@ export async function GET(
     };
   });
 
-  return NextResponse.json({ seats });
+  return NextResponse.json({ seats }, {
+    headers: { 'Cache-Control': 's-maxage=15, stale-while-revalidate=30' },
+  });
 }
