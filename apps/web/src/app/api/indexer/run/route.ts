@@ -11,7 +11,7 @@ function authorized(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${secret}`;
 }
 
-// ─── Chain + ABI ─────────────────────────────────────────────────────────────
+// ─── Chain + client ───────────────────────────────────────────────────────────
 
 const chain = defineChain({
   id: 46630,
@@ -22,12 +22,15 @@ const chain = defineChain({
 
 const client = createPublicClient({ chain, transport: http(chain.rpcUrls.default.http[0]) });
 
-const BOARD_ADDRESS = (process.env.NEXT_PUBLIC_BOARD_ADDRESS ?? '0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E') as `0x${string}`;
+const BOARD_ADDRESS             = (process.env.NEXT_PUBLIC_BOARD_ADDRESS ?? '0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E') as `0x${string}`;
+const REWARD_ACCOUNTING_ADDRESS = (process.env.NEXT_PUBLIC_REWARD_ACCOUNTING_ADDRESS ?? '0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78') as `0x${string}`;
 const DEPLOYMENT_BLOCK = BigInt(process.env.DEPLOYMENT_BLOCK ?? '98751649');
 const BATCH_SIZE = 200n;
 const BOARD_ID = process.env.BOARD_ID ?? 'hood';
 
-const ABI = [
+// ─── ABIs ─────────────────────────────────────────────────────────────────────
+
+const BOARD_ABI = [
   { type: 'event', name: 'SeatAcquired', inputs: [
     { name: 'seatId', type: 'uint256', indexed: true },
     { name: 'owner', type: 'address', indexed: true },
@@ -78,6 +81,23 @@ const ABI = [
     { name: 'newPrice', type: 'uint256' },
     { name: 'prepaidDeposit', type: 'uint256' },
   ], outputs: [], stateMutability: 'nonpayable' },
+] as const;
+
+const REWARD_ABI = [
+  { type: 'event', name: 'RewardDeposited', inputs: [
+    { name: 'amount',          type: 'uint256', indexed: false },
+    { name: 'newGlobalIndex',  type: 'uint256', indexed: false },
+    { name: 'activeSeatCount', type: 'uint256', indexed: false },
+  ]},
+  { type: 'event', name: 'EarningsBanked', inputs: [
+    { name: 'seatId', type: 'uint256', indexed: true  },
+    { name: 'owner',  type: 'address', indexed: true  },
+    { name: 'amount', type: 'uint256', indexed: false },
+  ]},
+  { type: 'event', name: 'RewardClaimed', inputs: [
+    { name: 'owner',  type: 'address', indexed: true  },
+    { name: 'amount', type: 'uint256', indexed: false },
+  ]},
 ] as const;
 
 // ─── DB helpers ──────────────────────────────────────────────────────────────
@@ -147,11 +167,23 @@ async function patchSeat(seatId: number, blockNumber: bigint, patch: {
   );
 }
 
-// ─── Log processor ───────────────────────────────────────────────────────────
+// ─── Block timestamp cache (per-run, avoids duplicate getBlock calls) ─────────
 
-async function processLog(log: Log): Promise<void> {
+const blockTsCache = new Map<string, bigint>();
+
+async function getBlockTimestamp(blockNumber: bigint): Promise<bigint> {
+  const key = blockNumber.toString();
+  if (blockTsCache.has(key)) return blockTsCache.get(key)!;
+  const block = await client.getBlock({ blockNumber });
+  blockTsCache.set(key, block.timestamp);
+  return block.timestamp;
+}
+
+// ─── Log processors ──────────────────────────────────────────────────────────
+
+async function processBoardLog(log: Log): Promise<void> {
   let decoded: ReturnType<typeof decodeEventLog>;
-  try { decoded = decodeEventLog({ abi: ABI, data: log.data, topics: log.topics }); }
+  try { decoded = decodeEventLog({ abi: BOARD_ABI, data: log.data, topics: log.topics }); }
   catch { return; }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -176,7 +208,7 @@ async function processLog(log: Log): Promise<void> {
       let prepaidDeposit: bigint | undefined;
       try {
         const tx = await client.getTransaction({ hash: txHash });
-        const d = decodeFunctionData({ abi: ABI, data: tx.input });
+        const d = decodeFunctionData({ abi: BOARD_ABI, data: tx.input });
         if (d.functionName === 'takeSeat') prepaidDeposit = (d.args as unknown as unknown[])[4] as bigint;
       } catch {}
       const ok = await upsertEvent({ seatId, eventType: 'SeatTaken', txHash, logIndex: li, blockNumber: bn, blockTimestamp: a.timestamp, actor: a.newOwner, previousOwner: a.previousOwner, newOwner: a.newOwner, amount: a.takeoverPrice, previousPrice: a.takeoverPrice, newPrice: a.newPrice, metadata: { remainingBalanceRefund: a.remainingBalanceRefund.toString(), protocolFee: a.protocolFee.toString(), prepaidDeposit: prepaidDeposit?.toString() ?? null } });
@@ -196,6 +228,67 @@ async function processLog(log: Log): Promise<void> {
     case 'SeatForeclosed': {
       const ok = await upsertEvent({ seatId, eventType: 'SeatForeclosed', txHash, logIndex: li, blockNumber: bn, blockTimestamp: a.timestamp, actor: a.previousOwner, previousOwner: a.previousOwner });
       if (ok) await patchSeat(seatId, bn, { clear: true });
+      break;
+    }
+  }
+}
+
+async function processRewardLog(log: Log): Promise<void> {
+  let decoded: ReturnType<typeof decodeEventLog>;
+  try { decoded = decodeEventLog({ abi: REWARD_ABI, data: log.data, topics: log.topics }); }
+  catch { return; }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const a = decoded.args as any;
+  const bn = log.blockNumber!;
+  const txHash = log.transactionHash!;
+  const li = log.logIndex!;
+
+  switch (decoded.eventName) {
+    case 'RewardDeposited': {
+      const ts = await getBlockTimestamp(bn);
+      await pool.query(
+        `INSERT INTO reward_deposits
+           (board_id, amount, global_index, active_seat_count,
+            tx_hash, log_index, block_number, block_timestamp, occurred_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         ON CONFLICT (tx_hash, log_index) DO NOTHING`,
+        [BOARD_ID, a.amount.toString(), a.newGlobalIndex.toString(), Number(a.activeSeatCount),
+         txHash, li, bn.toString(), toDate(ts), toDate(ts)]
+      );
+      break;
+    }
+    case 'EarningsBanked': {
+      const seatId = Number(a.seatId);
+      const ts = await getBlockTimestamp(bn);
+      const guard = await pool.query(
+        `INSERT INTO seat_events
+           (board_id, seat_id, event_type, tx_hash, log_index, block_number, block_timestamp, actor, amount, occurred_at)
+         VALUES ($1, $2, 'EarningsBanked', $3, $4, $5, $6, $7, $8, $6)
+         ON CONFLICT (tx_hash, log_index) DO NOTHING`,
+        [BOARD_ID, seatId, txHash, li, bn.toString(), toDate(ts), a.owner.toLowerCase(), a.amount.toString()]
+      );
+      if ((guard.rowCount ?? 0) === 0) return;
+      await pool.query(
+        `INSERT INTO seat_reward_state (board_id, seat_id, cumulative_banked, last_updated_block, last_updated_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT (board_id, seat_id) DO UPDATE
+           SET cumulative_banked  = seat_reward_state.cumulative_banked + EXCLUDED.cumulative_banked,
+               last_updated_block = EXCLUDED.last_updated_block,
+               last_updated_at    = NOW()`,
+        [BOARD_ID, seatId, a.amount.toString(), bn.toString()]
+      );
+      break;
+    }
+    case 'RewardClaimed': {
+      const ts = await getBlockTimestamp(bn);
+      await pool.query(
+        `INSERT INTO reward_claims
+           (board_id, owner, amount, tx_hash, log_index, block_number, block_timestamp, occurred_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         ON CONFLICT (tx_hash, log_index) DO NOTHING`,
+        [BOARD_ID, a.owner.toLowerCase(), a.amount.toString(), txHash, li, bn.toString(), toDate(ts), toDate(ts)]
+      );
       break;
     }
   }
@@ -226,10 +319,23 @@ export async function POST(req: NextRequest) {
       ? cursor + BATCH_SIZE - 1n
       : latestBlock;
 
-    const logs = await client.getLogs({ address: BOARD_ADDRESS, fromBlock: cursor, toBlock });
+    const [boardLogs, rewardLogs] = await Promise.all([
+      client.getLogs({ address: BOARD_ADDRESS,             fromBlock: cursor, toBlock }),
+      client.getLogs({ address: REWARD_ACCOUNTING_ADDRESS, fromBlock: cursor, toBlock }),
+    ]);
 
-    for (const log of logs) {
-      await processLog(log);
+    // Process logs in block order so state mutations are applied correctly
+    const allLogs = [...boardLogs.map(l => ({ log: l, kind: 'board' as const })),
+                     ...rewardLogs.map(l => ({ log: l, kind: 'reward' as const }))]
+      .sort((x, y) => {
+        const bn = Number(x.log.blockNumber!) - Number(y.log.blockNumber!);
+        if (bn !== 0) return bn;
+        return (x.log.logIndex ?? 0) - (y.log.logIndex ?? 0);
+      });
+
+    for (const { log, kind } of allLogs) {
+      if (kind === 'board') await processBoardLog(log);
+      else await processRewardLog(log);
       eventsProcessed++;
     }
 

@@ -405,11 +405,19 @@ export default function SeatDetailPage() {
               <div className="sd-mini-legend">
                 <div className="sd-legend-item">
                   <div className="sd-legend-dot" style={{ background: 'var(--green-d)' }} />
-                  {boardRewards?.activeSeatCount ?? 0} ACTIVE
+                  {allSeats.filter(s => s.status === 'ACTIVE').length} ACTIVE
                 </div>
                 <div className="sd-legend-item">
                   <div className="sd-legend-dot" style={{ background: 'var(--bg4)' }} />
-                  {100 - (boardRewards?.activeSeatCount ?? 0)} VACANT
+                  {allSeats.filter(s => s.status === 'VACANT').length} VACANT
+                </div>
+                <div className="sd-legend-item">
+                  <div className="sd-legend-dot" style={{ background: 'var(--status-grace)' }} />
+                  {allSeats.filter(s => s.status === 'GRACE').length} GRACE
+                </div>
+                <div className="sd-legend-item">
+                  <div className="sd-legend-dot" style={{ background: 'var(--red)' }} />
+                  {allSeats.filter(s => s.status === 'FORECLOSABLE').length} FORE
                 </div>
               </div>
             </div>
@@ -803,7 +811,13 @@ function SeatActionModal({
           ? <div className="sc-title" style={{ color: 'var(--green)' }}>SEAT IS YOURS</div>
           : <div className="sc-title">{actionLabel}</div>}
         {txHash && (
-          <div className="sc-row"><span>Tx</span><span className="sc-v">{fmtAddr(txHash)}</span></div>
+          <div className="sc-row">
+            <span>Tx</span>
+            <a href={`https://explorer.testnet.chain.robinhood.com/tx/${txHash}`}
+               target="_blank" rel="noopener noreferrer" className="sc-v">
+              {fmtAddr(txHash)}
+            </a>
+          </div>
         )}
       </div>
     )

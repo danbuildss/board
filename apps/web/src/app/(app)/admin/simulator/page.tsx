@@ -22,8 +22,12 @@ const REGIMES: Record<RegimeKey, { label: string; amount: bigint; desc: string; 
 
 type TxState = { step: 'idle' | 'pending' | 'done' | 'error'; hash?: string; error?: string }
 
+const ADMIN_WALLETS = (process.env.NEXT_PUBLIC_ADMIN_WALLETS ?? '')
+  .split(',').map(a => a.trim().toLowerCase()).filter(Boolean)
+
 export default function SimulatorPage() {
   const { address } = useAccount()
+  const isAdmin = !!address && (ADMIN_WALLETS.length === 0 || ADMIN_WALLETS.includes(address.toLowerCase()))
   const [regime, setRegime] = useState<RegimeKey>('NORMAL')
   const [yieldTx, setYieldTx]     = useState<TxState>({ step: 'idle' })
   const [harvestTx, setHarvestTx] = useState<TxState>({ step: 'idle' })
@@ -70,6 +74,26 @@ export default function SimulatorPage() {
     }
   }
 
+  if (!address) {
+    return (
+      <div className="page-scroll">
+        <div className="page-inner" style={{ maxWidth: 560 }}>
+          <div className="sim-warn">Connect wallet to access this page.</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="page-scroll">
+        <div className="page-inner" style={{ maxWidth: 560 }}>
+          <div className="sim-warn">Admin access only. Set NEXT_PUBLIC_ADMIN_WALLETS to allow your wallet.</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="page-scroll">
       <div className="page-inner" style={{ maxWidth: 560 }}>
@@ -83,10 +107,6 @@ export default function SimulatorPage() {
           Control the MockStrategyAdapter regime. Stage yield as the contract owner, then
           harvest into BoardVault (permissionless). Does not reflect real RWA yield.
         </div>
-
-        {!address && (
-          <div className="sim-warn">Connect the owner wallet to stage yield.</div>
-        )}
 
         {/* Regime selector */}
         <div className="sim-section-label">MARKET REGIME</div>
