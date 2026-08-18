@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAccount } from 'wagmi'
 import { writeContract, waitForTransactionReceipt, readContract } from 'wagmi/actions'
-import { wagmiConfig, BOARD_ADDRESS, USDG_ADDRESS, robinhoodTestnet } from '@/lib/config'
+import { wagmiConfig, BOARD_ADDRESS, USDG_ADDRESS, activeChain } from '@/lib/config'
 import { BOARD_ABI, ERC20_ABI } from '@/lib/abi'
 import {
   fmtUSDG, fmtAddr, padSeat, minDeposit, weeklyFee, weeksRemaining,
@@ -198,7 +198,7 @@ export default function SeatDetailPage() {
     const hash = await writeContract(wagmiConfig, {
       address: USDG_ADDRESS, abi: ERC20_ABI,
       functionName: 'approve', args: [BOARD_ADDRESS, needed],
-      chain: robinhoodTestnet, account: address,
+      chain: activeChain, account: address,
     })
     await waitForTransactionReceipt(wagmiConfig, { hash })
   }
@@ -221,7 +221,7 @@ export default function SeatDetailPage() {
         address: BOARD_ADDRESS, abi: BOARD_ABI,
         functionName: 'takeVacantSeat',
         args: [BigInt(seat.seatId), priceRaw, prepaidRaw],
-        chain: robinhoodTestnet, account: address,
+        chain: activeChain, account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
       setTxHash(hash); setTxStep('done'); invalidate()
@@ -240,7 +240,7 @@ export default function SeatDetailPage() {
         address: BOARD_ADDRESS, abi: BOARD_ABI,
         functionName: 'setSeatPrice',
         args: [BigInt(seat.seatId), priceRaw],
-        chain: robinhoodTestnet, account: address,
+        chain: activeChain, account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
       setTxHash(hash); setTxStep('done'); invalidate()
@@ -260,7 +260,7 @@ export default function SeatDetailPage() {
         address: BOARD_ADDRESS, abi: BOARD_ABI,
         functionName: 'topUpSeat',
         args: [BigInt(seat.seatId), amtRaw],
-        chain: robinhoodTestnet, account: address,
+        chain: activeChain, account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
       setTxHash(hash); setTxStep('done'); invalidate()
@@ -282,7 +282,7 @@ export default function SeatDetailPage() {
         address: BOARD_ADDRESS, abi: BOARD_ABI,
         functionName: 'takeSeat',
         args: [BigInt(seat.seatId), seat.owner as `0x${string}`, expectedPrice, priceRaw, prepaidRaw],
-        chain: robinhoodTestnet, account: address,
+        chain: activeChain, account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
       setTxHash(hash); setTxStep('done'); invalidate()
@@ -300,7 +300,7 @@ export default function SeatDetailPage() {
         address: BOARD_ADDRESS, abi: BOARD_ABI,
         functionName: 'forecloseSeat',
         args: [BigInt(seat.seatId)],
-        chain: robinhoodTestnet, account: address,
+        chain: activeChain, account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
       setTxHash(hash); setTxStep('done'); invalidate()
@@ -488,7 +488,7 @@ export default function SeatDetailPage() {
               <div className="sd-section">
                 <div className="sd-section-head">
                   <span className="sd-section-title">YIELD OVERVIEW</span>
-                  <span className="sd-sim-tag">TESTNET</span>
+                  <span className="sd-sim-tag">LIVE</span>
                 </div>
                 <div className="sd-yield-grid">
                   <div className="sd-yield-cell">
@@ -774,7 +774,7 @@ function SeatActionModal({
             <div className="crow"><span>PROTOCOL FEE</span><span className="cv dim">{fmtUSDG(protocolFee)}</span></div>
           </div>
           <div className="takeover-preview">
-            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING · TESTNET)</div>
+            <div className="tp-label">EST. WEEKLY RETURNS (7D TRAILING)</div>
             <div className="tp-rows">
               <div className="tp-row"><span>7D reward / seat</span><span className="tp-v g">{fmtUSDG(rewards7d)}</span></div>
               <div className="tp-row"><span>Holding cost</span><span className="tp-v dim">−{fmtUSDG(wkCost)}</span></div>
@@ -815,7 +815,7 @@ function SeatActionModal({
         {txHash && (
           <div className="sc-row">
             <span>Tx</span>
-            <a href={`https://explorer.testnet.chain.robinhood.com/tx/${txHash}`}
+            <a href={`${activeChain.blockExplorers?.default.url}/tx/${txHash}`}
                target="_blank" rel="noopener noreferrer" className="sc-v">
               {fmtAddr(txHash)}
             </a>

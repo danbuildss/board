@@ -57,13 +57,13 @@ export default function AboutPage() {
             BOARD #001 / GENESIS
           </h2>
           <p style={{ fontSize: 14, color: 'var(--t2)', lineHeight: 1.75, marginBottom: 12 }}>
-            The first Board is BOARD #001 / GENESIS, deployed on Robinhood Chain Testnet (Chain 46630).
+            The first Board is BOARD #001 / GENESIS, deployed on Robinhood Chain (Chain 4663).
             It proves the core mechanics: take, hold, reprice, top-up, takeover, grace,
             and foreclosure — with exact financial reconciliation at every step.
           </p>
           <p style={{ fontSize: 14, color: 'var(--t2)', lineHeight: 1.75 }}>
-            This is a testnet deployment. No real funds are at risk. The mechanism is
-            being proven before mainnet launch.
+            Settlement is in USDG (Paxos Global Dollar). Real funds are at stake.
+            Understand the mechanics before participating.
           </p>
         </div>
 
@@ -99,15 +99,15 @@ export default function AboutPage() {
 
         <div style={{ borderTop: '1px solid var(--bd0)', paddingTop: 32 }}>
           <h2 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--t3)', marginBottom: 16 }}>
-            CONTRACTS · ROBINHOOD CHAIN TESTNET (46630)
+            CONTRACTS · ROBINHOOD CHAIN (4663)
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              ['BOARD', '0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E'],
-              ['REWARD ACCOUNTING', '0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78'],
-              ['BOARD VAULT', '0xf3751c59f4D90B3F117560Fc61c7968D8e1C4648'],
-              ['REGISTRY', '0x65fae2658BB7391E57290cb055E1448E3aa76cF6'],
-              ['SETTLEMENT (USDG)', '0x7E955252E15c84f5768B83c41a71F9eba181802F'],
+              ['BOARD', process.env.NEXT_PUBLIC_BOARD_ADDRESS ?? '—'],
+              ['REWARD ACCOUNTING', process.env.NEXT_PUBLIC_REWARD_ACCOUNTING_ADDRESS ?? '—'],
+              ['BOARD VAULT', process.env.NEXT_PUBLIC_BOARD_VAULT_ADDRESS ?? '—'],
+              ['REGISTRY', process.env.NEXT_PUBLIC_BOARD_REGISTRY_ADDRESS ?? '—'],
+              ['SETTLEMENT (USDG)', '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168'],
             ].map(([label, addr]) => (
               <div key={label} style={{ padding: '8px 12px', background: 'var(--bg2)', border: '1px solid var(--bd0)', borderRadius: 'var(--r-xs)' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.12em', color: 'var(--t3)', textTransform: 'uppercase', marginBottom: 3 }}>{label}</div>

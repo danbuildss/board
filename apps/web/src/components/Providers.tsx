@@ -3,7 +3,7 @@
 import { PrivyProvider } from '@privy-io/react-auth'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { wagmiConfig, robinhoodTestnet } from '@/lib/config'
+import { wagmiConfig, activeChain } from '@/lib/config'
 import { useState } from 'react'
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? ''
@@ -22,8 +22,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           theme: 'dark',
           accentColor: '#ccff00',
         },
-        defaultChain: robinhoodTestnet,
-        supportedChains: [robinhoodTestnet],
+        defaultChain: activeChain,
+        supportedChains: [activeChain],
       }}
     >
       <WagmiProvider config={wagmiConfig}>

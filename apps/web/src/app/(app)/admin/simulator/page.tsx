@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { writeContract, waitForTransactionReceipt } from 'wagmi/actions'
 import {
-  wagmiConfig, MOCK_STRATEGY_ADDRESS, BOARD_VAULT_ADDRESS, robinhoodTestnet,
+  wagmiConfig, MOCK_STRATEGY_ADDRESS, BOARD_VAULT_ADDRESS, activeChain,
 } from '@/lib/config'
 import { MOCK_STRATEGY_ABI, BOARD_VAULT_ABI } from '@/lib/abi'
 import { fmtUSDG } from '@/lib/format'
@@ -43,7 +43,7 @@ export default function SimulatorPage() {
         abi: MOCK_STRATEGY_ABI,
         functionName: 'simulateYield',
         args: [current.amount],
-        chain: robinhoodTestnet,
+        chain: activeChain,
         account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })
@@ -63,7 +63,7 @@ export default function SimulatorPage() {
         abi: BOARD_VAULT_ABI,
         functionName: 'collectAndDeposit',
         args: [],
-        chain: robinhoodTestnet,
+        chain: activeChain,
         account: address,
       })
       await waitForTransactionReceipt(wagmiConfig, { hash })

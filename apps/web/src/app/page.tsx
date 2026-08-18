@@ -350,10 +350,10 @@ export default function LandingPage() {
       {/* ── Metrics strip ── */}
       <div className="l-metrics">
         <div className="l-metric">
-          <div className="l-metric-label">7D SIM REVENUE <span style={{ color: 'var(--status-warn)', fontSize: 8 }}>SIMULATED</span></div>
+          <div className="l-metric-label">7D REWARDS</div>
           <div className="l-metric-val g">{revenue7d > 0n ? fmtUSDG(String(revenue7d)) : '—'}</div>
           <div className="l-metric-bottom">
-            <span className="l-metric-change">last 7 days · testnet</span>
+            <span className="l-metric-change">last 7 days</span>
             {revenue7d > 0n && <SparkLine />}
           </div>
         </div>
@@ -502,7 +502,7 @@ export default function LandingPage() {
                       <div className="l-feat-fval">{fmtUSDG(ask)}</div>
                     </div>
                     <div>
-                      <div className="l-feat-flabel">7D SIM REWARDS <span style={{ fontSize: 8, color: 'var(--status-warn)' }}>SIMULATED</span></div>
+                      <div className="l-feat-flabel">7D REWARDS</div>
                       <div className="l-feat-fval g" style={{ fontSize: 18 }}>{fmtUSDG(perSeat7d)}</div>
                     </div>
                     <div>

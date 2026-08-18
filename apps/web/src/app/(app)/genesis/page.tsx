@@ -53,11 +53,11 @@ export default function GenesisPage() {
         </div>
 
         <div style={{ border: '1px solid var(--bd0)', borderRadius: 'var(--r-xs)', padding: '10px 16px', background: 'var(--bg2)', marginBottom: 24, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--status-warn)', textTransform: 'uppercase' }}>TESTNET</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--green)', textTransform: 'uppercase' }}>LIVE</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)' }}>·</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Robinhood Chain Testnet · Chain 46630</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Robinhood Chain · Chain 4663</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t4)' }}>·</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Simulated Productive Revenue</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '.14em', color: 'var(--t3)', textTransform: 'uppercase' }}>Settlement: USDG</span>
         </div>
 
         {/* Board parameters */}
@@ -118,27 +118,27 @@ export default function GenesisPage() {
 
         {/* Contract addresses */}
         <div className="gn-section">
-          <div className="gn-section-label">CONTRACTS · ROBINHOOD CHAIN TESTNET (46630)</div>
+          <div className="gn-section-label">CONTRACTS · ROBINHOOD CHAIN (4663)</div>
           <div className="gn-addr-list">
             <div className="gn-addr-row">
               <span className="gn-addr-label">BOARD</span>
-              <span className="gn-addr-val">0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E</span>
+              <span className="gn-addr-val">{process.env.NEXT_PUBLIC_BOARD_ADDRESS ?? 'pending deployment'}</span>
             </div>
             <div className="gn-addr-row">
               <span className="gn-addr-label">REWARD ACCOUNTING</span>
-              <span className="gn-addr-val">0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78</span>
+              <span className="gn-addr-val">{process.env.NEXT_PUBLIC_REWARD_ACCOUNTING_ADDRESS ?? 'pending deployment'}</span>
             </div>
             <div className="gn-addr-row">
               <span className="gn-addr-label">BOARD VAULT</span>
-              <span className="gn-addr-val">0xf3751c59f4D90B3F117560Fc61c7968D8e1C4648</span>
+              <span className="gn-addr-val">{process.env.NEXT_PUBLIC_BOARD_VAULT_ADDRESS ?? 'pending deployment'}</span>
             </div>
             <div className="gn-addr-row">
               <span className="gn-addr-label">REGISTRY</span>
-              <span className="gn-addr-val">0x65fae2658BB7391E57290cb055E1448E3aa76cF6</span>
+              <span className="gn-addr-val">{process.env.NEXT_PUBLIC_BOARD_REGISTRY_ADDRESS ?? 'pending deployment'}</span>
             </div>
             <div className="gn-addr-row">
               <span className="gn-addr-label">SETTLEMENT (USDG)</span>
-              <span className="gn-addr-val">0x7E955252E15c84f5768B83c41a71F9eba181802F</span>
+              <span className="gn-addr-val">{process.env.NEXT_PUBLIC_USDG_ADDRESS ?? '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168'}</span>
             </div>
           </div>
         </div>

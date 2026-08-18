@@ -2,6 +2,18 @@ import { createConfig, injected } from 'wagmi'
 import { http } from 'wagmi'
 import { defineChain } from 'viem'
 
+export const robinhoodMainnet = defineChain({
+  id: 4663,
+  name: 'Robinhood Chain',
+  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.mainnet.chain.robinhood.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' },
+  },
+})
+
 export const robinhoodTestnet = defineChain({
   id: 46630,
   name: 'Robinhood Chain Testnet',
@@ -15,16 +27,21 @@ export const robinhoodTestnet = defineChain({
   testnet: true,
 })
 
-export const BOARD_ADDRESS              = '0x6A57Ff5C1d105941c8A6CcCC681F37B1FED9733E' as const
-export const REWARD_ACCOUNTING_ADDRESS  = '0xf51FAACD5a76Bf315a9473FcE549a49B2fe3cb78' as const
-export const BOARD_REGISTRY_ADDRESS     = '0x65fae2658BB7391E57290cb055E1448E3aa76cF6' as const
-export const USDG_ADDRESS              = '0x7E955252E15c84f5768B83c41a71F9eba181802F' as const
-export const MOCK_STRATEGY_ADDRESS     = '0xcc061Ecc90ddF9785b20bD99A604dA27CF784911' as const
-export const BOARD_VAULT_ADDRESS       = '0xf3751c59f4D90B3F117560Fc61c7968D8e1C4648' as const
-export const CHAIN_ID                  = 46630
+export const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID ?? '4663')
+export const activeChain = CHAIN_ID === 46630 ? robinhoodTestnet : robinhoodMainnet
+
+export const BOARD_ADDRESS              = (process.env.NEXT_PUBLIC_BOARD_ADDRESS              ?? '') as `0x${string}`
+export const REWARD_ACCOUNTING_ADDRESS  = (process.env.NEXT_PUBLIC_REWARD_ACCOUNTING_ADDRESS  ?? '') as `0x${string}`
+export const BOARD_REGISTRY_ADDRESS     = (process.env.NEXT_PUBLIC_BOARD_REGISTRY_ADDRESS     ?? '') as `0x${string}`
+export const USDG_ADDRESS              = (process.env.NEXT_PUBLIC_USDG_ADDRESS               ?? '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168') as `0x${string}`
+export const MOCK_STRATEGY_ADDRESS     = (process.env.NEXT_PUBLIC_MOCK_STRATEGY_ADDRESS      ?? '') as `0x${string}`
+export const BOARD_VAULT_ADDRESS       = (process.env.NEXT_PUBLIC_BOARD_VAULT_ADDRESS        ?? '') as `0x${string}`
 
 export const wagmiConfig = createConfig({
-  chains: [robinhoodTestnet],
+  chains: [robinhoodMainnet, robinhoodTestnet],
   connectors: [injected()],
-  transports: { [robinhoodTestnet.id]: http() },
+  transports: {
+    [robinhoodMainnet.id]: http(),
+    [robinhoodTestnet.id]: http(),
+  },
 })

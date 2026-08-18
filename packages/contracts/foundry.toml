@@ -18,7 +18,9 @@ runs  = 256
 depth = 50
 
 [rpc_endpoints]
+robinhood_mainnet = "${ROBINHOOD_MAINNET_RPC:-https://rpc.mainnet.chain.robinhood.com}"
 robinhood_testnet = "${ROBINHOOD_TESTNET_RPC:-https://rpc.testnet.chain.robinhood.com}"
 
 [etherscan]
+robinhood_mainnet = { key = "${BLOCKSCOUT_API_KEY:-verifyContract}", url = "https://robinhoodchain.blockscout.com/api" }
 robinhood_testnet = { key = "${BLOCKSCOUT_API_KEY:-verifyContract}", url = "https://explorer.testnet.chain.robinhood.com/api" }

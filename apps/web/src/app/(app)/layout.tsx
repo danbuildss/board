@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {wrongChain && (
         <div className="network-warn">
-          ⚠ Wrong network — switch to Robinhood Chain Testnet (chain 46630)
+          ⚠ Wrong network — switch to Robinhood Chain (chain 4663)
         </div>
       )}
 

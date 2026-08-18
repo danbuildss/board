@@ -76,8 +76,8 @@ export default function BoardsPage() {
             </div>
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">NETWORK</div>
-              <div className="boards-hero-stat-val" style={{ fontSize: 12, color: 'var(--t3)' }}>TESTNET</div>
-              <div className="boards-hero-stat-sub">Robinhood Chain 46630</div>
+              <div className="boards-hero-stat-val" style={{ fontSize: 12, color: 'var(--green)' }}>LIVE</div>
+              <div className="boards-hero-stat-sub">Robinhood Chain 4663</div>
             </div>
             <div className="boards-hero-stat">
               <div className="boards-hero-stat-label">ACTIVE SEATS</div>
@@ -114,12 +114,12 @@ export default function BoardsPage() {
             </div>
             <div>
               <div className="fbc-name">HOOD</div>
-              <div className="fbc-name-sub">Robinhood Chain · Testnet</div>
+              <div className="fbc-name-sub">Robinhood Chain · Mainnet</div>
             </div>
             <div className="fbc-tags">
               <span className="fbc-tag">HARBERGER</span>
               <span className="fbc-tag">100 SEATS</span>
-              <span className="fbc-tag">TESTNET</span>
+              <span className="fbc-tag">MAINNET</span>
             </div>
             <p className="fbc-desc">
               The genesis BOARD. 100 seats, self-assessed prices, 0.5% weekly holding cost.
@@ -199,8 +199,7 @@ export default function BoardsPage() {
             </div>
             <p style={{ fontSize: 14, color: 'var(--t2)', lineHeight: 1.75, marginBottom: 0, maxWidth: 560 }}>
               BOARD #001 / GENESIS is the first productive market. Additional Boards launching
-              new productive positions will be announced once the genesis mechanics are
-              proven on testnet. No future Boards are announced at this time.
+              new productive positions will be announced. No future Boards are announced at this time.
             </p>
           </div>
         </div>

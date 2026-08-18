@@ -13,11 +13,17 @@ function authorized(req: NextRequest): boolean {
 
 // ─── Chain + client ───────────────────────────────────────────────────────────
 
+const CHAIN_ID_ENV  = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID ?? '4663');
+const IS_TESTNET    = CHAIN_ID_ENV === 46630;
+const DEFAULT_RPC   = IS_TESTNET
+  ? 'https://rpc.testnet.chain.robinhood.com'
+  : 'https://rpc.mainnet.chain.robinhood.com';
+
 const chain = defineChain({
-  id: 46630,
-  name: 'Robinhood Chain Testnet',
+  id: CHAIN_ID_ENV,
+  name: IS_TESTNET ? 'Robinhood Chain Testnet' : 'Robinhood Chain',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: { default: { http: [process.env.RPC_URL ?? 'https://rpc.testnet.chain.robinhood.com'] } },
+  rpcUrls: { default: { http: [process.env.RPC_URL ?? DEFAULT_RPC] } },
 });
 
 const client = createPublicClient({ chain, transport: http(chain.rpcUrls.default.http[0]) });
